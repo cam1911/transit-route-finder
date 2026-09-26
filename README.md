@@ -9,7 +9,7 @@ Search for a prospective home, inspect nearby DART stops, select a stop, and exp
 ## Highlights
 
 - Google Places address search and autocomplete
-- Nearby stop discovery within 0.5, 1, or 2 miles
+- Nearby stop discovery defaults to 0.5 miles, with 1- and 2-mile options
 - Mode-aware map markers for bus, rail, and streetcar service
 - Stop details with every available route and direction
 - Published GTFS route geometry rendered on Google Maps
@@ -20,11 +20,11 @@ Search for a prospective home, inspect nearby DART stops, select a stop, and exp
 
 ## Demo
 
-| Selected stop and route | Mobile bottom sheet |
+| Selected stop | Selected route |
 | --- | --- |
-| ![Selected DART route on desktop](docs/screenshots/selected-route-desktop.png) | ![Selected DART route on mobile](docs/screenshots/selected-route-mobile.png) |
+| ![Selected DART stop](docs/screenshots/selected-stop-desktop.png) | ![Selected DART route](docs/screenshots/selected-route-desktop.png) |
 
-The screenshots use Dallas City Hall, a public civic address. No home address or personal location data is included in this repository.
+The screenshots use a public commercial address in Dallas. No home address or personal location data is included in this repository.
 
 ## Tech stack
 

@@ -43,7 +43,7 @@ export default function TransitExplorer() {
   const [query, setQuery] = useState("");
   const [suggestions, setSuggestions] = useState([]);
   const [suggestionsOpen, setSuggestionsOpen] = useState(false);
-  const [radius, setRadius] = useState(1);
+  const [radius, setRadius] = useState(0.5);
   const [location, setLocation] = useState(null);
   const [stops, setStops] = useState([]);
   const [selectedStop, setSelectedStop] = useState(null);
