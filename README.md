@@ -4,7 +4,7 @@ Transit Home Finder answers one apartment-hunting question: **how good is public
 
 Search for a prospective home, inspect nearby DART stops, select a stop, and explore its published routes on an interactive Google Map. The experience is deliberately ordered around **address → nearby transit → stop → route**, rather than generic trip planning.
 
-![Nearby transit around Dallas City Hall](docs/screenshots/nearby-transit-desktop.png)
+![Transit Home Finder address search](docs/screenshots/search-desktop.png)
 
 ## Highlights
 
@@ -19,6 +19,8 @@ Search for a prospective home, inspect nearby DART stops, select a stop, and exp
 - Optional PostgreSQL/PostGIS data source for production-scale spatial queries
 
 ## Demo
+
+![Nearby transit around NorthPark Center](docs/screenshots/nearby-transit-desktop.png)
 
 | Selected stop | Selected route |
 | --- | --- |
