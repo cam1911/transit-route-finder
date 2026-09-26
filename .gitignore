@@ -1,0 +1,12 @@
+.env*
+!.env.example
+.agents/
+skills-lock.json
+.next/
+.next-dev/
+node_modules/
+.dart-gtfs.zip
+coverage/
+.DS_Store
+*.log
+npm-debug.log*

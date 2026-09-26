@@ -1,0 +1,29 @@
+{
+  "name": "transit-home-finder",
+  "version": "0.1.0",
+  "private": true,
+  "scripts": {
+    "dev": "next dev",
+    "build": "next build",
+    "start": "next start",
+    "import:dart": "node scripts/import-dart.mjs",
+    "import:gtfs": "node scripts/gtfs/import.mjs",
+    "import:local": "node scripts/gtfs/import-local.mjs"
+  },
+  "dependencies": {
+    "@googlemaps/js-api-loader": "^1.16.8",
+    "@supabase/ssr": "^0.12.7",
+    "@supabase/supabase-js": "^2.117.2",
+    "adm-zip": "^0.6.1",
+    "csv-parse": "^7.0.3",
+    "lucide-react": "^1.48.0",
+    "next": "^15.5.4",
+    "pg": "^8.23.0",
+    "react": "^19.1.1",
+    "react-dom": "^19.1.1"
+  },
+  "devDependencies": {
+    "@tailwindcss/postcss": "^4.3.3",
+    "tailwindcss": "^4.1.13"
+  }
+}
