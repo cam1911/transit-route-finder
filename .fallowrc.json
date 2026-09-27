@@ -1,0 +1,26 @@
+{
+  "$schema": "./node_modules/fallow/schema.json",
+  "minimumVersion": "3.30.0",
+  "ignorePatterns": [
+    ".agents/**",
+    ".next/**",
+    ".next-dev/**",
+    "coverage/**",
+    "data/**",
+    "docs/screenshots/**",
+    "node_modules/**",
+    "playwright-report/**",
+    "test-results/**",
+    "supabase/.branches/**",
+    "supabase/.temp/**"
+  ],
+  "duplicates": {
+    "mode": "mild",
+    "ignoreImports": true
+  },
+  "audit": {
+    "gate": "new-only",
+    "healthBaseline": ".fallow-health-baseline.json"
+  },
+  "failOnParseError": true
+}

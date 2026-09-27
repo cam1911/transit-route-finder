@@ -10,7 +10,9 @@ const INSERT_BATCH_SIZE = 500;
 function requireDatabaseUrl() {
   const value = process.env.SUPABASE_DB_URL || process.env.DATABASE_URL;
   if (!value) {
-    throw new Error("Set SUPABASE_DB_URL in .env.local to your Supabase PostgreSQL connection string before importing.");
+    throw new Error(
+      "Set SUPABASE_DB_URL in .env.local to your Supabase PostgreSQL connection string before importing.",
+    );
   }
   return value;
 }
@@ -29,10 +31,7 @@ async function insertRows(client, table, columns, rows, geographyColumns = []) {
       });
       return `(${placeholders.join(", ")})`;
     });
-    await client.query(
-      `INSERT INTO ${table} (${columns.join(", ")}) VALUES ${tuples.join(", ")}`,
-      values,
-    );
+    await client.query(`INSERT INTO ${table} (${columns.join(", ")}) VALUES ${tuples.join(", ")}`, values);
   }
 }
 
@@ -41,14 +40,23 @@ function normalize(feed, tables) {
   // unique inside one feed, while this schema can hold multiple agencies.
   const agencies = tables.agency.length
     ? tables.agency.map((row) => ({
-      id: row.agency_id ? `${feed.id}:${row.agency_id}` : feed.id,
-      sourceId: row.agency_id || "",
-      name: row.agency_name || feed.name,
-      url: row.agency_url || null,
-      timezone: row.agency_timezone || feed.timezone || null,
-      lang: row.agency_lang || feed.lang || null,
-    }))
-    : [{ id: feed.id, sourceId: "", name: feed.name, url: null, timezone: feed.timezone || null, lang: feed.lang || null }];
+        id: row.agency_id ? `${feed.id}:${row.agency_id}` : feed.id,
+        sourceId: row.agency_id || "",
+        name: row.agency_name || feed.name,
+        url: row.agency_url || null,
+        timezone: row.agency_timezone || feed.timezone || null,
+        lang: row.agency_lang || feed.lang || null,
+      }))
+    : [
+        {
+          id: feed.id,
+          sourceId: "",
+          name: feed.name,
+          url: null,
+          timezone: feed.timezone || null,
+          lang: feed.lang || null,
+        },
+      ];
   const agencyBySource = new Map(agencies.map((agency) => [agency.sourceId, agency.id]));
   const defaultAgencyId = agencies.length === 1 ? agencies[0].id : null;
   const agencyForRoute = (route) => {
@@ -125,7 +133,8 @@ function normalize(feed, tables) {
   for (const trip of trips) {
     if (!trip.shape_id) continue;
     const key = `${trip.route_id}\u0000${trip.shape_id}`;
-    if (!variants.has(key)) variants.set(key, { route_id: trip.route_id, shape_id: trip.shape_id, directions: new Set() });
+    if (!variants.has(key))
+      variants.set(key, { route_id: trip.route_id, shape_id: trip.shape_id, directions: new Set() });
     variants.get(key).directions.add(`${trip.direction_id || ""}\u0000${trip.headsign || ""}`);
   }
   const routeShapes = [...variants.values()];
@@ -138,10 +147,12 @@ function normalize(feed, tables) {
     trips,
     stopTimes,
     routeShapes,
-    shapeVariants: routeShapes.flatMap((routeShape) => [...routeShape.directions].map((key) => {
-      const [direction_id, headsign] = key.split("\u0000");
-      return { route_id: routeShape.route_id, shape_id: routeShape.shape_id, direction_id, headsign };
-    })),
+    shapeVariants: routeShapes.flatMap((routeShape) =>
+      [...routeShape.directions].map((key) => {
+        const [direction_id, headsign] = key.split("\u0000");
+        return { route_id: routeShape.route_id, shape_id: routeShape.shape_id, direction_id, headsign };
+      }),
+    ),
   };
 }
 
@@ -153,14 +164,41 @@ async function insertFeed(client, feed, data) {
     // Serialize imports of the same feed without blocking imports for other feeds.
     await client.query("SELECT pg_advisory_xact_lock(hashtext($1))", [`gtfs-import:${feed.id}`]);
     await client.query("DELETE FROM agencies WHERE feed_id = $1", [feed.id]);
-    await insertRows(client, "agencies", ["id", "feed_id", "name", "url", "timezone", "lang"],
-      data.agencies.map((row) => ({ ...row, feed_id: feed.id })));
-    await insertRows(client, "routes", ["id", "agency_id", "feed_route_id", "short_name", "long_name", "route_type", "color", "text_color"], data.routes);
-    await insertRows(client, "stops", ["id", "agency_id", "feed_stop_id", "name", "latitude", "longitude", "location"], data.stops, ["location"]);
+    await insertRows(
+      client,
+      "agencies",
+      ["id", "feed_id", "name", "url", "timezone", "lang"],
+      data.agencies.map((row) => ({ ...row, feed_id: feed.id })),
+    );
+    await insertRows(
+      client,
+      "routes",
+      ["id", "agency_id", "feed_route_id", "short_name", "long_name", "route_type", "color", "text_color"],
+      data.routes,
+    );
+    await insertRows(
+      client,
+      "stops",
+      ["id", "agency_id", "feed_stop_id", "name", "latitude", "longitude", "location"],
+      data.stops,
+      ["location"],
+    );
     await insertRows(client, "shape_catalog", ["id", "agency_id", "feed_shape_id"], data.shapeCatalog);
-    await insertRows(client, "shapes", ["shape_id", "sequence", "latitude", "longitude", "location"], data.shapes, ["location"]);
-    await insertRows(client, "trips", ["id", "feed_trip_id", "route_id", "service_id", "shape_id", "direction_id", "headsign"], data.trips);
-    await insertRows(client, "stop_times", ["trip_id", "stop_id", "arrival_time", "departure_time", "stop_sequence"], data.stopTimes);
+    await insertRows(client, "shapes", ["shape_id", "sequence", "latitude", "longitude", "location"], data.shapes, [
+      "location",
+    ]);
+    await insertRows(
+      client,
+      "trips",
+      ["id", "feed_trip_id", "route_id", "service_id", "shape_id", "direction_id", "headsign"],
+      data.trips,
+    );
+    await insertRows(
+      client,
+      "stop_times",
+      ["trip_id", "stop_id", "arrival_time", "departure_time", "stop_sequence"],
+      data.stopTimes,
+    );
 
     // Build LineStrings inside PostGIS from ordered point rows. The temporary
     // table is private to this transaction and disappears automatically.
@@ -175,7 +213,12 @@ async function insertFeed(client, feed, data) {
       GROUP BY imports.route_id, imports.shape_id
       HAVING COUNT(*) > 1
     `);
-    await insertRows(client, "route_shape_variants", ["route_id", "shape_id", "direction_id", "headsign"], data.shapeVariants);
+    await insertRows(
+      client,
+      "route_shape_variants",
+      ["route_id", "shape_id", "direction_id", "headsign"],
+      data.shapeVariants,
+    );
     await client.query("COMMIT");
   } catch (error) {
     await client.query("ROLLBACK");
@@ -207,14 +250,18 @@ export async function importFeed(feed) {
   } finally {
     await pool.end();
   }
-  console.log(`Imported ${data.routes.length} routes, ${data.stops.length} stops, ${data.trips.length} trips, and ${data.shapes.length} shape points for ${feed.id}.`);
+  console.log(
+    `Imported ${data.routes.length} routes, ${data.stops.length} stops, ${data.trips.length} trips, and ${data.shapes.length} shape points for ${feed.id}.`,
+  );
 }
 
 const requestedFeed = process.argv[2];
 // Keeping the CLI entry point in this reusable module allows import-dart.mjs to
 // call importFeed directly without accidentally running this block twice.
 if (requestedFeed === "--help" || requestedFeed === "-h") {
-  console.log("Usage: npm run import:gtfs -- <feed-id> (configured feeds: dart; GTFS_FEED_URL may override the feed URL)");
+  console.log(
+    "Usage: npm run import:gtfs -- <feed-id> (configured feeds: dart; GTFS_FEED_URL may override the feed URL)",
+  );
 } else if (requestedFeed !== undefined || process.argv[1]?.endsWith("/import.mjs")) {
   const feed = feeds[requestedFeed || "dart"];
   if (!feed) {

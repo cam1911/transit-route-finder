@@ -26,23 +26,22 @@
 // browser DOM APIs, and the Google Maps JavaScript SDK.
 "use client";
 
+// Loader is a class exported by Google's npm package. It downloads the actual
+// Maps SDK in the browser only when this component initializes.
+import { Loader } from "@googlemaps/js-api-loader";
 // This is the feature's "controller" component. It owns browser-only Google
 // Maps objects, React state, API calls, and coordination between presentational
 // components in TransitUI.js.
 // Named imports use braces; the package decides which names it exports.
 import { useEffect, useRef, useState } from "react";
-// Loader is a class exported by Google's npm package. It downloads the actual
-// Maps SDK in the browser only when this component initializes.
-import { Loader } from "@googlemaps/js-api-loader";
 // These are project modules. Keeping display components in another file makes
 // this controller easier to reason about and those components easier to reuse.
-import {
-  MapView, SearchPanel, TransitStopPanel, TransitSummary, modeLabel, routeName,
-} from "./transit/TransitUI";
+import { modeLabel, routeName } from "./transit/TransitUI";
+import TransitWorkspace from "./transit/TransitWorkspace";
 
 // Constants outside the component are created once when this module loads,
 // rather than being recreated after every React render.
-const DEFAULT_CENTER = { lat: 32.7767, lng: -96.7970 };
+const DEFAULT_CENTER = { lat: 32.7767, lng: -96.797 };
 
 // Prefer the highest-capacity transit mode when choosing a marker's visual style.
 function primaryMode(routes) {
@@ -72,9 +71,36 @@ function splitAddress(place, fallback) {
 function uniqueRoutes(stops) {
   // A Map keyed by route ID removes duplicates while preserving insertion order.
   const routes = new Map();
-  stops.forEach((stop) => stop.routes.forEach((route) => routes.set(route.id, route)));
+  stops.forEach((stop) => {
+    stop.routes.forEach((route) => {
+      routes.set(route.id, route);
+    });
+  });
   // Spread syntax (`...`) turns the Map iterator into a normal array.
   return [...routes.values()];
+}
+
+function drawRouteShapes({ google, map, location, routeLines, shapes, color }) {
+  // Keep Google Maps geometry creation outside the React controller's workflow.
+  for (const shape of shapes) {
+    routeLines.push(
+      new google.maps.Polyline({
+        map,
+        path: shape.points.map(([lat, lng]) => ({ lat, lng })),
+        strokeColor: color || "#0f766e",
+        strokeOpacity: 0.94,
+        strokeWeight: 6,
+        zIndex: 30,
+      }),
+    );
+  }
+
+  const bounds = new google.maps.LatLngBounds();
+  if (location) bounds.extend(location.position);
+  for (const shape of shapes) {
+    for (const [lat, lng] of shape.points) bounds.extend({ lat, lng });
+  }
+  if (!bounds.isEmpty()) map.fitBounds(bounds, 72);
 }
 
 export default function TransitExplorer() {
@@ -163,7 +189,20 @@ export default function TransitExplorer() {
     initializeMap();
     // An effect may return a cleanup function. React calls it during unmount or
     // before rerunning the effect.
-    return () => { cancelled = true; };
+    return () => {
+      cancelled = true;
+      routeLinesRef.current.forEach((line) => {
+        line.setMap(null);
+      });
+      stopMarkersRef.current.forEach(({ marker, clickListener }) => {
+        clickListener.remove();
+        marker.map = null;
+      });
+      if (destinationMarkerRef.current) destinationMarkerRef.current.map = null;
+      if (circleRef.current) circleRef.current.setMap(null);
+      mapInstance.current = null;
+      googleRef.current = null;
+    };
   }, []);
 
   // Debounce autocomplete so typing does not make a network request per keystroke.
@@ -201,14 +240,16 @@ export default function TransitExplorer() {
       cancelled = true;
       window.clearTimeout(timer);
     };
-  // This dependency array tells React which values should restart the debounce.
+    // This dependency array tells React which values should restart the debounce.
   }, [mapReady, query, location]);
 
   // Imperative Google Maps overlays live outside React's DOM tree, so each
   // explicit cleanup removes them from the map and synchronizes React state.
   function clearRoute() {
     // Array.forEach performs a side effect for each item and returns nothing.
-    routeLinesRef.current.forEach((line) => line.setMap(null));
+    routeLinesRef.current.forEach((line) => {
+      line.setMap(null);
+    });
     routeLinesRef.current = [];
     setActiveRoute(null);
     setRouteDetail(null);
@@ -231,7 +272,10 @@ export default function TransitExplorer() {
   }
 
   function clearStops() {
-    stopMarkersRef.current.forEach(({ marker }) => { marker.map = null; });
+    stopMarkersRef.current.forEach(({ marker, clickListener }) => {
+      clickListener.remove();
+      marker.map = null;
+    });
     stopMarkersRef.current = [];
   }
 
@@ -292,11 +336,12 @@ export default function TransitExplorer() {
         zIndex: 20,
       });
       // Bridge Google's event system back into the React interaction flow.
-      marker.addListener("click", () => selectStop(stop));
+      const clickListener = marker.addListener("click", () => selectStop(stop));
       return {
         id: stop.id,
         marker,
         element,
+        clickListener,
       };
     });
   }
@@ -505,24 +550,14 @@ export default function TransitExplorer() {
       if (!response.ok) throw new Error(data.error || "Could not load route geometry.");
       setRouteDetail(data);
       // One published route can contain multiple GTFS shapes/variants.
-      // `for...of` is used instead of map because the goal is a side effect:
-      // create Google objects and push them into the cleanup ref.
-      for (const shape of data.shapes || []) {
-        routeLinesRef.current.push(new googleRef.current.maps.Polyline({
-          map: mapInstance.current,
-          // Each point is a [lat, lng] array. Parameter destructuring converts
-          // it to Google's expected object format.
-          path: shape.points.map(([lat, lng]) => ({ lat, lng })),
-          strokeColor: route.color || "#0f766e",
-          strokeOpacity: 0.94,
-          strokeWeight: 6,
-          zIndex: 30,
-        }));
-      }
-      const bounds = new googleRef.current.maps.LatLngBounds();
-      if (locationRef.current) bounds.extend(locationRef.current.position);
-      (data.shapes || []).forEach((shape) => shape.points.forEach(([lat, lng]) => bounds.extend({ lat, lng })));
-      if (!bounds.isEmpty()) mapInstance.current.fitBounds(bounds, 72);
+      drawRouteShapes({
+        google: googleRef.current,
+        map: mapInstance.current,
+        location: locationRef.current,
+        routeLines: routeLinesRef.current,
+        shapes: data.shapes || [],
+        color: route.color,
+      });
     } catch (error) {
       setError(error.message || "Could not load route geometry.");
     }
@@ -538,60 +573,51 @@ export default function TransitExplorer() {
     return counts;
   }, {});
   // `find` returns the first matching item. The final `||` provides a fallback.
-  const activeDirection = routeDetail?.directions?.find((direction) =>
-    direction.id === activeRoute?.direction?.id
-    && (!activeRoute.direction.headsign || direction.headsign === activeRoute.direction.headsign),
-  ) || routeDetail?.directions?.[0];
+  const activeDirection =
+    routeDetail?.directions?.find(
+      (direction) =>
+        direction.id === activeRoute?.direction?.id &&
+        (!activeRoute.direction.headsign || direction.headsign === activeRoute.direction.headsign),
+    ) || routeDetail?.directions?.[0];
 
   return (
-    // Tailwind utility classes handle layout while globals.css styles the custom
-    // Google Maps marker DOM and animations.
-    // JSX attributes use `className` because `class` is a JavaScript keyword.
-    // Values inside `{}` are JavaScript expressions; quoted values are strings.
-    <main className="relative flex h-[100dvh] w-full overflow-hidden bg-[#dce3e2]">
-      {/* On desktop, one fixed-width workspace panel sits beside the map. Mobile
-          keeps the established map-overlay and bottom-sheet interaction. */}
-      <aside className="pointer-events-none absolute inset-0 z-20 md:pointer-events-auto md:relative md:flex md:h-full md:w-[400px] md:shrink-0 md:flex-col md:border-r md:border-gray-200 md:bg-white">
-        <div className={`pointer-events-auto absolute left-3 right-3 top-3 max-h-[calc(100dvh-24px)] overflow-hidden rounded-xl border border-white/70 bg-white/96 shadow-[0_14px_45px_rgba(20,36,34,0.16)] backdrop-blur-xl md:static md:min-h-0 md:w-full md:rounded-none md:border-0 md:bg-white md:shadow-none ${selectedStop ? "max-md:hidden md:shrink-0" : "md:flex md:flex-1 md:flex-col"}`}>
-          {/* Props are the component inputs. Data flows down; event callbacks let
-              the child notify this parent that the user did something. */}
-          <SearchPanel
-            location={location} radius={radius} stopCount={stops.length}
-            compact={Boolean(selectedStop)}
-            onReset={resetSearch} onRadiusChange={changeRadius}
-            query={query} setQuery={setQuery} loading={loading} mapReady={mapReady}
-            onSubmit={searchAddress} suggestions={suggestions} suggestionsOpen={suggestionsOpen}
-            setSuggestionsOpen={setSuggestionsOpen} onChoose={chooseSuggestion}
-          />
-
-          {/* The nearby list occupies the panel instead of becoming another card. */}
-          {location && !selectedStop && (
-            <TransitSummary stops={stops} routeCounts={routeCounts} onSelectStop={selectStop} />
-          )}
-        </div>
-
-        {/* Deeper workflow states replace the list within the same desktop panel. */}
-        {selectedStop && (
-          <TransitStopPanel
-            selectedStop={selectedStop} stopDetail={stopDetail} stopLoading={stopLoading}
-            activeRoute={activeRoute} activeDirection={activeDirection}
-            onClose={closeStop} onSelectRoute={selectRoute} onBackRoute={closeRoute}
-          />
-        )}
-      </aside>
-
-      {/* `ref` is special: React assigns MapView's DOM element to mapRef.current. */}
-      <div className="absolute inset-0 md:relative md:min-w-0 md:flex-1">
-        <MapView ref={mapRef} />
-      </div>
-
-      <div className="pointer-events-none absolute bottom-3 left-1/2 z-10 -translate-x-1/2" aria-live="polite">
-        {/* A ternary chooses between two values: condition ? success : fallback.
-            aria-live asks assistive technology to announce status changes. */}
-        {(loading || error) && (
-          <div className="rounded-full border border-white/70 bg-white/90 px-4 py-2 text-xs font-medium text-gray-600 shadow-lg backdrop-blur-xl">{loading ? "Finding nearby transit..." : error}</div>
-        )}
-      </div>
-    </main>
+    <TransitWorkspace
+      mapRef={mapRef}
+      search={{
+        location,
+        radius,
+        stopCount: stops.length,
+        onReset: resetSearch,
+        onRadiusChange: changeRadius,
+        query,
+        setQuery,
+        loading,
+        mapReady,
+        onSubmit: searchAddress,
+        suggestions,
+        suggestionsOpen,
+        setSuggestionsOpen,
+        onChoose: chooseSuggestion,
+      }}
+      summary={{
+        stops,
+        routeCounts,
+        onSelectStop: selectStop,
+      }}
+      stop={{
+        selectedStop,
+        stopDetail,
+        stopLoading,
+        activeRoute,
+        activeDirection,
+        onClose: closeStop,
+        onSelectRoute: selectRoute,
+        onBackRoute: closeRoute,
+      }}
+      status={{
+        loading,
+        error,
+      }}
+    />
   );
 }

@@ -43,8 +43,7 @@ No residential address, saved search, or personal location data is included.
 - Tailwind CSS 4
 - Google Maps JavaScript API and Places API
 - DART static GTFS data
-- PostgreSQL, PostGIS, and `pg` for the optional database-backed data source
-- Supabase SSR client and session middleware
+- Supabase-hosted PostgreSQL, PostGIS, and `pg` for the optional database-backed data source
 
 ## Getting started
 
@@ -52,7 +51,7 @@ No residential address, saved search, or personal location data is included.
 
 - Node.js 24 or newer
 - A Google Maps Platform project with the Maps JavaScript API and Places API enabled
-- A Supabase project for the configured session middleware
+- A Supabase project only when using the optional PostGIS data source
 
 ### Install
 
@@ -81,13 +80,11 @@ checkout.
 | --- | --- | --- | --- |
 | `NEXT_PUBLIC_GOOGLE_MAPS_API_KEY` | Yes | Browser | Google Maps browser key |
 | `NEXT_PUBLIC_GOOGLE_MAP_ID` | Recommended | Browser | Google Cloud map style ID |
-| `NEXT_PUBLIC_SUPABASE_URL` | Yes | Browser | Supabase project URL |
-| `NEXT_PUBLIC_SUPABASE_PUBLISHABLE_KEY` | Yes | Browser | Supabase publishable key |
 | `SUPABASE_DB_URL` | PostGIS only | Server secret | PostgreSQL connection string |
 | `GTFS_DATA_SOURCE` | No | Server | `json` or `postgres`; automatically uses JSON when no database URL exists |
 | `GTFS_FEED_URL` | No | Server | Optional GTFS feed override |
 
-`NEXT_PUBLIC_` values are intentionally included in the browser bundle. Restrict the Google key by HTTP referrer and allow only the required Google APIs. A Supabase publishable key is designed for public clients, but it must be paired with appropriate Row Level Security. Never expose a Supabase secret/service-role key or database connection string.
+`NEXT_PUBLIC_` values are intentionally included in the browser bundle. Restrict the Google key by HTTP referrer and allow only the required Google APIs. Never expose a Supabase secret/service-role key or database connection string.
 
 ## Transit data
 
@@ -131,6 +128,39 @@ Install Chromium once after installing dependencies:
 npm run browser:install
 ```
 
+## Code quality
+
+Run the normal local quality gate:
+
+```bash
+npm run quality
+```
+
+This command runs Biome formatting and lint checks, Fallow dead-code and
+duplication analysis, and a baseline-aware Fallow health gate. It does not
+start Next.js, a browser, Docker, or Supabase, and it does not require Google
+Maps or database credentials. This repository contains JavaScript rather than
+TypeScript, so there is no separate TypeScript compiler step.
+
+Useful focused commands:
+
+```bash
+npm run lint                 # Check Biome formatting and lint rules
+npm run lint:fix             # Apply safe Biome fixes
+npm run format               # Format authored source files
+npm run format:check         # Check formatting only
+npm run fallow               # Print the complete Fallow analysis
+npm run fallow:health        # Print the current health score
+npm run fallow:audit -- --base HEAD
+```
+
+The committed Fallow health baseline records known complexity by function
+identity. Do not refresh it merely to hide a new finding; update it only after
+the corresponding finding is fixed or intentionally reviewed. CI runs the same
+static gate and uses Fallow's changed-code audit against the pull request or
+push base, so inherited health findings do not block the first run while newly
+introduced findings do.
+
 Run the browser suite:
 
 ```bash
@@ -144,8 +174,9 @@ npm run db:start
 npm run test:db
 ```
 
-The CI workflow runs the production build, Playwright suite, local Supabase
-migrations, and all pgTAP security assertions on Node 24.
+The CI workflow runs the static quality gate first. After it passes, separate
+jobs run the production build and Playwright suite, plus local Supabase
+migrations and all pgTAP security assertions, on Node 24.
 
 ## API routes
 
@@ -169,7 +200,6 @@ lib/                 GTFS and database data access
 scripts/gtfs/        Feed download, validation, parsing, and import
 supabase/migrations/ PostGIS schema and server-only access controls
 supabase/tests/      pgTAP tests for grants and RLS
-utils/supabase/      Browser/server Supabase clients and middleware
 ```
 
 ## Architecture
@@ -206,9 +236,8 @@ Google Places ──> TransitExplorer (browser state + map)
 5. **ETL layer:** scripts under `scripts/gtfs/` download a public GTFS ZIP,
    parse its CSV files, validate relationships and coordinates, normalize IDs,
    and write either JSON or relational PostgreSQL records.
-6. **Session layer:** the root proxy and `utils/supabase/` keep browser and
-   server auth cookies synchronized. Transit data itself is queried server-side
-   through `pg`, not through the Supabase browser client.
+6. **Security boundary:** transit data is queried only by server-side Route
+   Handlers through `pg`; browser roles have no table privileges.
 
 The main user flow is **address → coordinates → nearby stops → stop details →
 route geometry**. Data becomes progressively more detailed, so the browser does
@@ -245,11 +274,6 @@ logic. Use this order to study the project:
 | `scripts/gtfs/import.mjs` | Batch inserts, transactions, advisory locks, normalization, and PostGIS geometry construction. |
 | `scripts/import-dart.mjs` | A small compatibility wrapper around the reusable importer. |
 | `supabase/migrations/0001_gtfs.sql` | Relational GTFS schema, foreign keys, cascading deletes, PostGIS types, and indexes. |
-| `proxy.js` | Next.js 16 request interception and route matching. |
-| `utils/supabase/config.js` | Shared environment validation. |
-| `utils/supabase/client.js` | Supabase client factory for browser components. |
-| `utils/supabase/server.js` | Request-scoped Supabase client for server code. |
-| `utils/supabase/middleware.js` | Session validation and cookie refresh across request/response boundaries. |
 | `data/dart/*.json` | Generated GTFS snapshots consumed by the local fallback; inspect their shape, but regenerate rather than hand-edit them. |
 | `docs/screenshots/*.png` | Static documentation assets with no executable behavior. |
 

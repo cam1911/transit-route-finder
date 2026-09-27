@@ -14,13 +14,18 @@ if (!response.ok) throw new Error(`GTFS download failed: HTTP ${response.status}
 const tables = validateGtfs(parseGtfs(Buffer.from(await response.arrayBuffer())));
 
 // Index related tables by ID before joining them in JavaScript.
-const routeById = new Map(tables.routes.map((route) => [route.route_id, {
-  id: route.route_id,
-  shortName: route.route_short_name || route.route_id,
-  longName: route.route_long_name || "",
-  routeType: Number(route.route_type),
-  color: /^[0-9a-f]{6}$/i.test(route.route_color || "") ? `#${route.route_color}` : null,
-}]));
+const routeById = new Map(
+  tables.routes.map((route) => [
+    route.route_id,
+    {
+      id: route.route_id,
+      shortName: route.route_short_name || route.route_id,
+      longName: route.route_long_name || "",
+      routeType: Number(route.route_type),
+      color: /^[0-9a-f]{6}$/i.test(route.route_color || "") ? `#${route.route_color}` : null,
+    },
+  ]),
+);
 const tripById = new Map(tables.trips.map((trip) => [trip.trip_id, trip]));
 const servicesByStop = new Map();
 

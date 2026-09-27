@@ -10,7 +10,26 @@ permissions:
   contents: read
 
 jobs:
+  quality:
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    steps:
+      - uses: actions/checkout@v5
+        with:
+          fetch-depth: 0
+      - uses: actions/setup-node@v5
+        with:
+          node-version-file: .node-version
+          cache: npm
+      - run: npm ci
+      - run: npm run quality
+      - name: Audit changed code with Fallow
+        env:
+          FALLOW_AUDIT_BASE: ${{ github.event.pull_request.base.sha || github.event.before }}
+        run: npm run fallow:audit -- --base "$FALLOW_AUDIT_BASE" --format github-annotations
+
   application:
+    needs: quality
     runs-on: ubuntu-latest
     timeout-minutes: 15
     steps:
@@ -25,6 +44,7 @@ jobs:
       - run: npm run test:e2e
 
   database-security:
+    needs: quality
     runs-on: ubuntu-latest
     timeout-minutes: 15
     steps:

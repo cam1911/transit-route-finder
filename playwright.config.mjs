@@ -21,10 +21,8 @@ export default defineConfig({
     env: {
       ...process.env,
       GTFS_DATA_SOURCE: "json",
-      NEXT_PUBLIC_SUPABASE_URL:
-        process.env.NEXT_PUBLIC_SUPABASE_URL || "http://127.0.0.1:54321",
-      NEXT_PUBLIC_SUPABASE_PUBLISHABLE_KEY:
-        process.env.NEXT_PUBLIC_SUPABASE_PUBLISHABLE_KEY || "sb_publishable_e2e",
+      NEXT_PUBLIC_SUPABASE_URL: process.env.NEXT_PUBLIC_SUPABASE_URL || "http://127.0.0.1:54321",
+      NEXT_PUBLIC_SUPABASE_PUBLISHABLE_KEY: process.env.NEXT_PUBLIC_SUPABASE_PUBLISHABLE_KEY || "sb_publishable_e2e",
     },
   },
   projects: [

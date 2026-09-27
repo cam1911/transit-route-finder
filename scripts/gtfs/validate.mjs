@@ -12,9 +12,7 @@ function numberInRange(value, min, max) {
   return Number.isFinite(parsed) && parsed >= min && parsed <= max;
 }
 
-export function validateGtfs(tables) {
-  // Collect related errors before throwing so a feed maintainer can fix several
-  // problems in one pass instead of rerunning once per missing field.
+function schemaErrors(tables) {
   const errors = [];
   for (const [name, columns] of Object.entries(REQUIRED_COLUMNS)) {
     const rows = tables[name];
@@ -26,43 +24,87 @@ export function validateGtfs(tables) {
       if (!(column in rows[0])) errors.push(`${name}.txt is missing column ${column}`);
     }
   }
-  if (errors.length) throw new Error(`Invalid GTFS feed:\n- ${errors.join("\n- ")}`);
+  return errors;
+}
 
-  // Sets make uniqueness and foreign-key-style membership checks inexpensive.
-  const routeIds = new Set(tables.routes.map((row) => row.route_id));
-  const stopIds = new Set(tables.stops.map((row) => row.stop_id));
-  const tripIds = new Set(tables.trips.map((row) => row.trip_id));
-  const shapeIds = new Set(tables.shapes.map((row) => row.shape_id));
-
+function duplicateIdErrors(tables, routeIds, stopIds, tripIds) {
+  const errors = [];
   if (routeIds.size !== tables.routes.length) errors.push("routes.txt contains duplicate route_id values");
   if (stopIds.size !== tables.stops.length) errors.push("stops.txt contains duplicate stop_id values");
   if (tripIds.size !== tables.trips.length) errors.push("trips.txt contains duplicate trip_id values");
+  return errors;
+}
 
-  for (const row of tables.routes) {
+function routeErrors(routes) {
+  const errors = [];
+  for (const row of routes) {
     if (!Number.isInteger(Number(row.route_type))) errors.push(`Invalid route_type for route ${row.route_id}`);
   }
-  for (const row of tables.stops) {
+  return errors;
+}
+
+function stopErrors(stops) {
+  const errors = [];
+  for (const row of stops) {
     if (!numberInRange(row.stop_lat, -90, 90) || !numberInRange(row.stop_lon, -180, 180)) {
       errors.push(`Invalid coordinates for stop ${row.stop_id}`);
       break;
     }
   }
-  for (const row of tables.trips) {
+  return errors;
+}
+
+function tripErrors(trips, routeIds, shapeIds) {
+  const errors = [];
+  for (const row of trips) {
     if (!routeIds.has(row.route_id)) errors.push(`Trip ${row.trip_id} references missing route ${row.route_id}`);
-    if (row.shape_id && !shapeIds.has(row.shape_id)) errors.push(`Trip ${row.trip_id} references missing shape ${row.shape_id}`);
+    if (row.shape_id && !shapeIds.has(row.shape_id))
+      errors.push(`Trip ${row.trip_id} references missing shape ${row.shape_id}`);
   }
-  for (const row of tables.stop_times) {
+  return errors;
+}
+
+function stopTimeErrors(stopTimes, tripIds, stopIds) {
+  const errors = [];
+  for (const row of stopTimes) {
     if (!tripIds.has(row.trip_id)) errors.push(`Stop time references missing trip ${row.trip_id}`);
     if (!stopIds.has(row.stop_id)) errors.push(`Stop time references missing stop ${row.stop_id}`);
     if (!Number.isInteger(Number(row.stop_sequence))) errors.push(`Invalid stop_sequence for trip ${row.trip_id}`);
   }
-  for (const row of tables.shapes) {
+  return errors;
+}
+
+function shapeErrors(shapes) {
+  const errors = [];
+  for (const row of shapes) {
     if (!numberInRange(row.shape_pt_lat, -90, 90) || !numberInRange(row.shape_pt_lon, -180, 180)) {
       errors.push(`Invalid coordinates for shape ${row.shape_id}`);
       break;
     }
     if (!Number.isInteger(Number(row.shape_pt_sequence))) errors.push(`Invalid shape sequence for ${row.shape_id}`);
   }
+  return errors;
+}
+
+export function validateGtfs(tables) {
+  // Collect related errors before throwing so a feed maintainer can fix several
+  // problems in one pass instead of rerunning once per missing field.
+  const structureErrors = schemaErrors(tables);
+  if (structureErrors.length) throw new Error(`Invalid GTFS feed:\n- ${structureErrors.join("\n- ")}`);
+
+  // Sets make uniqueness and foreign-key-style membership checks inexpensive.
+  const routeIds = new Set(tables.routes.map((row) => row.route_id));
+  const stopIds = new Set(tables.stops.map((row) => row.stop_id));
+  const tripIds = new Set(tables.trips.map((row) => row.trip_id));
+  const shapeIds = new Set(tables.shapes.map((row) => row.shape_id));
+  const errors = [
+    ...duplicateIdErrors(tables, routeIds, stopIds, tripIds),
+    ...routeErrors(tables.routes),
+    ...stopErrors(tables.stops),
+    ...tripErrors(tables.trips, routeIds, shapeIds),
+    ...stopTimeErrors(tables.stop_times, tripIds, stopIds),
+    ...shapeErrors(tables.shapes),
+  ];
 
   // Some bad references can repeat thousands of times; de-duplicate the report.
   if (errors.length) throw new Error(`Invalid GTFS feed:\n- ${[...new Set(errors)].join("\n- ")}`);

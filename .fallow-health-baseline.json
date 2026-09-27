@@ -1,0 +1,227 @@
+{
+  "kind": "health",
+  "finding_counts": {
+    "app/api/transit/nearby/route.js": {
+      "crap_moderate": {
+        "count": 1
+      }
+    },
+    "app/api/transit/stops/nearby/route.js": {
+      "crap_moderate": {
+        "count": 1
+      }
+    },
+    "components/TransitExplorer.js": {
+      "complexity_high": {
+        "count": 1
+      },
+      "crap_critical": {
+        "count": 1
+      },
+      "crap_high": {
+        "count": 3
+      },
+      "crap_moderate": {
+        "count": 6
+      }
+    },
+    "components/transit/TransitUI.js": {
+      "crap_critical": {
+        "count": 1
+      },
+      "crap_high": {
+        "count": 2
+      },
+      "crap_moderate": {
+        "count": 3
+      }
+    },
+    "components/transit/TransitWorkspace.js": {
+      "crap_high": {
+        "count": 1
+      }
+    },
+    "lib/api/nearby-request.js": {
+      "crap_high": {
+        "count": 1
+      }
+    },
+    "lib/gtfs.js": {
+      "crap_high": {
+        "count": 2
+      }
+    },
+    "scripts/gtfs/import-local.mjs": {
+      "crap_moderate": {
+        "count": 1
+      }
+    },
+    "scripts/gtfs/import.mjs": {
+      "crap_critical": {
+        "count": 1
+      },
+      "crap_high": {
+        "count": 2
+      }
+    },
+    "scripts/gtfs/validate.mjs": {
+      "crap_moderate": {
+        "count": 4
+      }
+    }
+  },
+  "identity_finding_counts": {
+    "app/api/transit/nearby/route.js\u0000GET": {
+      "crap_moderate": {
+        "count": 1
+      }
+    },
+    "app/api/transit/stops/nearby/route.js\u0000GET": {
+      "crap_moderate": {
+        "count": 1
+      }
+    },
+    "components/TransitExplorer.js\u0000<arrow>": {
+      "crap_moderate": {
+        "count": 1
+      }
+    },
+    "components/TransitExplorer.js\u0000TransitExplorer": {
+      "complexity_high": {
+        "count": 1
+      }
+    },
+    "components/TransitExplorer.js\u0000commitPlace": {
+      "crap_moderate": {
+        "count": 1
+      }
+    },
+    "components/TransitExplorer.js\u0000drawRouteShapes": {
+      "crap_high": {
+        "count": 1
+      }
+    },
+    "components/TransitExplorer.js\u0000initializeMap": {
+      "crap_moderate": {
+        "count": 1
+      }
+    },
+    "components/TransitExplorer.js\u0000loadStops": {
+      "crap_high": {
+        "count": 1
+      }
+    },
+    "components/TransitExplorer.js\u0000searchAddress": {
+      "crap_high": {
+        "count": 1
+      }
+    },
+    "components/TransitExplorer.js\u0000selectRoute": {
+      "crap_critical": {
+        "count": 1
+      }
+    },
+    "components/TransitExplorer.js\u0000selectStop": {
+      "crap_moderate": {
+        "count": 1
+      }
+    },
+    "components/TransitExplorer.js\u0000splitAddress": {
+      "crap_moderate": {
+        "count": 1
+      }
+    },
+    "components/TransitExplorer.js\u0000timer": {
+      "crap_moderate": {
+        "count": 1
+      }
+    },
+    "components/transit/TransitUI.js\u0000<arrow>": {
+      "crap_moderate": {
+        "count": 2
+      }
+    },
+    "components/transit/TransitUI.js\u0000AddressAutocomplete": {
+      "crap_critical": {
+        "count": 1
+      }
+    },
+    "components/transit/TransitUI.js\u0000RouteDetail": {
+      "crap_high": {
+        "count": 1
+      }
+    },
+    "components/transit/TransitUI.js\u0000SearchPanel": {
+      "crap_moderate": {
+        "count": 1
+      }
+    },
+    "components/transit/TransitUI.js\u0000TransitStopPanel": {
+      "crap_high": {
+        "count": 1
+      }
+    },
+    "components/transit/TransitWorkspace.js\u0000TransitWorkspace": {
+      "crap_high": {
+        "count": 1
+      }
+    },
+    "lib/api/nearby-request.js\u0000parseNearbySearchParams": {
+      "crap_high": {
+        "count": 1
+      }
+    },
+    "lib/gtfs.js\u0000getRoute": {
+      "crap_high": {
+        "count": 1
+      }
+    },
+    "lib/gtfs.js\u0000getStop": {
+      "crap_high": {
+        "count": 1
+      }
+    },
+    "scripts/gtfs/import-local.mjs\u0000routeById": {
+      "crap_moderate": {
+        "count": 1
+      }
+    },
+    "scripts/gtfs/import.mjs\u0000agencies": {
+      "crap_high": {
+        "count": 1
+      }
+    },
+    "scripts/gtfs/import.mjs\u0000normalize": {
+      "crap_critical": {
+        "count": 1
+      }
+    },
+    "scripts/gtfs/import.mjs\u0000routes": {
+      "crap_high": {
+        "count": 1
+      }
+    },
+    "scripts/gtfs/validate.mjs\u0000schemaErrors": {
+      "crap_moderate": {
+        "count": 1
+      }
+    },
+    "scripts/gtfs/validate.mjs\u0000shapeErrors": {
+      "crap_moderate": {
+        "count": 1
+      }
+    },
+    "scripts/gtfs/validate.mjs\u0000stopTimeErrors": {
+      "crap_moderate": {
+        "count": 1
+      }
+    },
+    "scripts/gtfs/validate.mjs\u0000tripErrors": {
+      "crap_moderate": {
+        "count": 1
+      }
+    }
+  },
+  "runtime_coverage_findings": [],
+  "target_keys": []
+}

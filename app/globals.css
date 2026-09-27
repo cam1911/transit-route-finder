@@ -7,18 +7,35 @@
   --teal: #0f766e;
 }
 
-* { box-sizing: border-box; }
+* {
+  box-sizing: border-box;
+}
 /* The product is a full-screen map; panels provide their own scrolling. */
-html, body { margin: 0; padding: 0; min-height: 100%; overflow: hidden; }
+html,
+body {
+  margin: 0;
+  padding: 0;
+  min-height: 100%;
+  overflow: hidden;
+}
 body {
   background: var(--background);
   color: var(--foreground);
   font-family: "Avenir Next", Avenir, "SF Pro Text", "Segoe UI", sans-serif;
   letter-spacing: 0;
 }
-button, input { font: inherit; letter-spacing: 0; }
-button { cursor: pointer; }
-#map { width: 100%; height: 100%; }
+button,
+input {
+  font: inherit;
+  letter-spacing: 0;
+}
+button {
+  cursor: pointer;
+}
+#map {
+  width: 100%;
+  height: 100%;
+}
 
 /* Google AdvancedMarkerElement renders these custom DOM nodes on the map. */
 .destination-map-marker {
@@ -60,19 +77,34 @@ button { cursor: pointer; }
   box-shadow: 0 2px 7px rgb(15 23 42 / 30%);
   cursor: pointer;
   transform-origin: center;
-  transition: opacity 160ms ease, transform 160ms ease, box-shadow 160ms ease;
+  transition:
+    opacity 160ms ease,
+    transform 160ms ease,
+    box-shadow 160ms ease;
   animation: stop-arrive 180ms ease-out both;
 }
-.transit-stop-marker--rail { --marker-color: #c2413b; }
-.transit-stop-marker--streetcar { --marker-color: #7c3aed; }
-.transit-stop-marker--bus { --marker-color: #2563a6; }
+.transit-stop-marker--rail {
+  --marker-color: #c2413b;
+}
+.transit-stop-marker--streetcar {
+  --marker-color: #7c3aed;
+}
+.transit-stop-marker--bus {
+  --marker-color: #2563a6;
+}
 .transit-stop-marker:hover,
 .transit-stop-marker.is-selected {
   z-index: 5;
   transform: scale(1.28);
-  box-shadow: 0 0 0 5px rgb(255 255 255 / 68%), 0 5px 13px rgb(15 23 42 / 32%);
+  box-shadow:
+    0 0 0 5px rgb(255 255 255 / 68%),
+    0 5px 13px rgb(15 23 42 / 32%);
 }
-.transit-stop-marker.is-selected { box-shadow: 0 0 0 5px rgb(15 118 110 / 22%), 0 5px 13px rgb(15 23 42 / 32%); }
+.transit-stop-marker.is-selected {
+  box-shadow:
+    0 0 0 5px rgb(15 118 110 / 22%),
+    0 5px 13px rgb(15 23 42 / 32%);
+}
 .transit-stop-marker.is-route-hidden {
   visibility: hidden;
   opacity: 0;
@@ -106,7 +138,9 @@ button { cursor: pointer; }
   color: white;
   box-shadow: 0 10px 30px rgb(15 23 42 / 24%);
   opacity: 0;
-  transition: opacity 140ms ease, transform 140ms ease;
+  transition:
+    opacity 140ms ease,
+    transform 140ms ease;
   white-space: nowrap;
 }
 .transit-stop-tooltip::after {
@@ -121,12 +155,26 @@ button { cursor: pointer; }
   transform: translateX(-50%);
 }
 .transit-stop-tooltip strong,
-.transit-stop-tooltip span { display: block; }
-.transit-stop-tooltip strong { font-size: 11px; font-weight: 700; }
-.transit-stop-tooltip span { margin-top: 2px; color: #cbd5e1; font-size: 9px; font-weight: 500; }
+.transit-stop-tooltip span {
+  display: block;
+}
+.transit-stop-tooltip strong {
+  font-size: 11px;
+  font-weight: 700;
+}
+.transit-stop-tooltip span {
+  margin-top: 2px;
+  color: #cbd5e1;
+  font-size: 9px;
+  font-weight: 500;
+}
 
 /* The vertical line and nodes turn an ordered GTFS stop list into a timeline. */
-.route-timeline { margin: 0; padding: 2px 0 2px 5px; list-style: none; }
+.route-timeline {
+  margin: 0;
+  padding: 2px 0 2px 5px;
+  list-style: none;
+}
 .route-timeline__stop {
   position: relative;
   display: flex;
@@ -156,44 +204,90 @@ button { cursor: pointer; }
   background: #d1d5db;
 }
 
-.address-selection { animation: content-arrive 180ms ease-out both; }
-.transit-summary { animation: content-arrive 180ms 30ms ease-out both; }
-.stop-panel { animation: sheet-arrive 220ms cubic-bezier(0.22, 0.8, 0.32, 1) both; }
+.address-selection {
+  animation: content-arrive 180ms ease-out both;
+}
+.transit-summary {
+  animation: content-arrive 180ms 30ms ease-out both;
+}
+.stop-panel {
+  animation: sheet-arrive 220ms cubic-bezier(0.22, 0.8, 0.32, 1) both;
+}
 
 /* Small entrance animations make map and panel state changes easier to follow. */
 @keyframes destination-arrive {
-  from { opacity: 0; transform: translateY(-13px) scale(0.85); }
-  to { opacity: 1; transform: translateY(-5px) scale(1); }
+  from {
+    opacity: 0;
+    transform: translateY(-13px) scale(0.85);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(-5px) scale(1);
+  }
 }
 @keyframes stop-arrive {
-  from { opacity: 0; transform: scale(0.55); }
-  to { opacity: 1; transform: scale(1); }
+  from {
+    opacity: 0;
+    transform: scale(0.55);
+  }
+  to {
+    opacity: 1;
+    transform: scale(1);
+  }
 }
 @keyframes content-arrive {
-  from { opacity: 0; transform: translateY(-5px); }
-  to { opacity: 1; transform: translateY(0); }
+  from {
+    opacity: 0;
+    transform: translateY(-5px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
 }
 @keyframes sheet-arrive {
-  from { opacity: 0; transform: translateY(18px); }
-  to { opacity: 1; transform: translateY(0); }
+  from {
+    opacity: 0;
+    transform: translateY(18px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
 }
 @media (hover: hover) {
   /* Avoid hover-only tooltips on touch devices, where hover can become sticky. */
-  .transit-stop-marker:hover .transit-stop-tooltip { display: block; opacity: 1; transform: translateX(-50%) scale(0.78) translateY(-2px); }
+  .transit-stop-marker:hover .transit-stop-tooltip {
+    display: block;
+    opacity: 1;
+    transform: translateX(-50%) scale(0.78) translateY(-2px);
+  }
 }
 
 @media (max-width: 639px) {
   /* Lift Google's controls above the mobile stop-detail sheet. */
-  .gm-bundled-control { margin-bottom: 145px !important; }
-  .transit-stop-marker { width: 24px; height: 24px; }
+  .gm-bundled-control {
+    /* biome-ignore lint/complexity/noImportantStyles: Override Google Maps' inline control positioning. */
+    margin-bottom: 145px !important;
+  }
+  .transit-stop-marker {
+    width: 24px;
+    height: 24px;
+  }
 }
 
 @media (prefers-reduced-motion: reduce) {
   /* Respect the operating-system accessibility preference without changing layout. */
-  *, *::before, *::after {
+  *,
+  *::before,
+  *::after {
+    /* biome-ignore lint/complexity/noImportantStyles: Reduced-motion overrides must win over authored scrolling. */
     scroll-behavior: auto !important;
+    /* biome-ignore lint/complexity/noImportantStyles: Reduced-motion overrides must win over authored animation. */
     animation-duration: 0.01ms !important;
+    /* biome-ignore lint/complexity/noImportantStyles: Reduced-motion overrides must win over authored animation. */
     animation-delay: 0ms !important;
+    /* biome-ignore lint/complexity/noImportantStyles: Reduced-motion overrides must win over authored transitions. */
     transition-duration: 0.01ms !important;
   }
 }

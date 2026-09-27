@@ -15,9 +15,9 @@ results on Google Maps. The browser calls Next.js API routes, which validate the
 request and ask a shared GTFS data layer for nearby stops, stop details, or route
 geometry. That data layer can use a bundled JSON snapshot for easy local
 development or PostgreSQL/PostGIS for scalable geographic searches. Separate
-import scripts download and normalize public DART GTFS data. Supabase utilities
-maintain a server-compatible authentication session, although the current
-transit search itself does not require user-specific data.
+import scripts download and normalize public DART GTFS data. Supabase can host
+the PostgreSQL database, while the application keeps all database access on the
+server because the transit search does not require user accounts.
 
 ## The mental model
 
@@ -187,7 +187,6 @@ into every button or card.
 - `app/api/transit/stops/[stopId]/route.js` has a dynamic path parameter.
 - `components/TransitExplorer.js` requires `"use client"` because it uses hooks
   and browser APIs.
-- `proxy.js` refreshes Supabase sessions before matched requests continue.
 
 ### Why this design
 
@@ -265,10 +264,9 @@ debounce reduces quota use, race conditions, and visible suggestion flicker.
 - **Supabase** hosts PostgreSQL and adds products such as Auth, APIs, Storage,
   and Realtime.
 - **`pg`** is the Node.js PostgreSQL driver used by this app.
-- **`@supabase/ssr`** manages Supabase Auth sessions across browser/server code.
 
-The transit query path uses `pg` directly. The Supabase utilities are currently
-session infrastructure; they do not power the map search.
+The transit query path uses `pg` directly. Supabase Auth is not included because
+the current application has no accounts or user-specific transit data.
 
 ### Learn
 
@@ -380,9 +378,9 @@ joins. Keeping it behind APIs protects credentials, centralizes validation, and
 keeps the frontend independent of storage details.
 
 **Why both Supabase and `pg`?**
-Supabase provides the hosted PostgreSQL platform and authentication session
-tools. `pg` gives server code direct access to PostGIS queries. They solve
-different parts of the stack.
+Supabase provides the hosted PostgreSQL platform. `pg` gives server-only code
+direct access to PostGIS queries without exposing database credentials or a
+browser-facing Data API.
 
 **Why is `TransitExplorer` a Client Component?**
 It needs React hooks, DOM nodes, `window`, event handlers, and the browser-only
