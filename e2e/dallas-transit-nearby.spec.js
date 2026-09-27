@@ -4,9 +4,9 @@ test("renders the desktop map workspace and address search", async ({ page }) =>
   await page.setViewportSize({ width: 1280, height: 720 });
   await page.goto("/");
 
-  await expect(page).toHaveTitle(/Transit Home Finder/);
-  await expect(page.getByRole("heading", { name: "Find an address" })).toBeVisible();
-  await expect(page.getByRole("combobox", { name: "Search an address" })).toBeVisible();
+  await expect(page).toHaveTitle(/Dallas Transit Nearby/);
+  await expect(page.getByRole("heading", { name: "Find transit near a Dallas address" })).toBeVisible();
+  await expect(page.getByRole("combobox", { name: "Search a Dallas address" })).toBeVisible();
   await expect(page.getByRole("button", { name: "Search" })).toBeVisible();
 
   const sidebarBox = await page.locator("main > aside").boundingBox();

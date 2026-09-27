@@ -250,7 +250,7 @@ export default function TransitExplorer() {
     dot.className = "destination-map-marker__dot";
     const label = document.createElement("span");
     label.className = "destination-map-marker__label";
-    label.textContent = "Home";
+    label.textContent = "Address";
     // This DOM is created manually because Google owns the marker container;
     // React only owns the panels rendered in the JSX below.
     element.append(dot, label);

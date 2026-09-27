@@ -4,8 +4,8 @@ import "./globals.css";
 
 // Next.js turns this object into the document's <title> and meta description.
 export const metadata = {
-  title: "Transit Home Finder",
-  description: "Explore transit routes around a potential home.",
+  title: "Dallas Transit Nearby",
+  description: "Find nearby DART stops and routes for any Dallas address.",
 };
 
 export default function RootLayout({ children }) {

@@ -4,7 +4,7 @@
 // through props, while TransitExplorer owns effects, API calls, and map objects.
 import { forwardRef } from "react";
 import {
-  ArrowLeft, ArrowRight, BusFront, ChevronRight, Home, LoaderCircle,
+  ArrowLeft, ArrowRight, BusFront, ChevronRight, LoaderCircle,
   MapPin, Navigation, Route as RouteIcon, Search, TrainFront, TramFront, X,
 } from "lucide-react";
 
@@ -54,8 +54,8 @@ export function AddressAutocomplete({
     <div className="relative">
       <div className="flex items-end justify-between gap-3">
         <div>
-          <h1 className="text-base font-semibold text-gray-950">Find an address</h1>
-          {!location && <p className="mt-0.5 text-xs text-gray-500">Explore transit before choosing where to live.</p>}
+          <h1 className="text-base font-semibold text-gray-950">Find transit near a Dallas address</h1>
+          {!location && <p className="mt-0.5 text-xs text-gray-500">Explore nearby DART stops and published routes.</p>}
         </div>
       </div>
       <form onSubmit={onSubmit} className="relative mt-2.5">
@@ -64,9 +64,9 @@ export function AddressAutocomplete({
           value={query}
           onChange={(event) => setQuery(event.target.value)}
           onFocus={() => setSuggestionsOpen(true)}
-          placeholder="Search an address..."
+          placeholder="Search a Dallas address..."
           className="h-11 w-full rounded-lg border border-gray-200 bg-gray-50 pl-9 pr-20 text-sm text-gray-950 outline-none transition placeholder:text-gray-400 hover:border-gray-300 focus:border-teal-700 focus:bg-white focus:ring-3 focus:ring-teal-700/10"
-          aria-label="Search an address"
+          aria-label="Search a Dallas address"
           role="combobox"
           aria-autocomplete="list"
           aria-expanded={suggestionsOpen && suggestions.length > 0}
@@ -149,11 +149,11 @@ export function SearchPanel({
     <div className="shrink-0 bg-white">
       <header className="flex h-14 items-center gap-2.5 border-b border-gray-100 px-4">
         <span className="flex h-8 w-8 items-center justify-center rounded-lg bg-teal-800 text-white">
-          <Home className="h-4 w-4" aria-hidden="true" />
+          <MapPin className="h-4 w-4" aria-hidden="true" />
         </span>
         <div>
-          <p className="text-[11px] font-bold uppercase tracking-[0.15em] text-teal-800">Transit Home Finder</p>
-          <p className="text-[11px] text-gray-500">Dallas area transit explorer</p>
+          <p className="text-[11px] font-bold uppercase tracking-[0.15em] text-teal-800">Dallas Transit Nearby</p>
+          <p className="text-[11px] text-gray-500">DART stops and routes</p>
         </div>
       </header>
       <div className="p-4">

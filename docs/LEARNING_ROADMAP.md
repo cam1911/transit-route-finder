@@ -1,4 +1,4 @@
-# Transit Home Finder Learning Roadmap
+# Dallas Transit Nearby Learning Roadmap
 
 This guide assumes you remember some JavaScript but are new to modern JavaScript,
 React, Next.js, Tailwind CSS, HTTP APIs, Supabase, PostgreSQL/PostGIS, Google
@@ -9,7 +9,7 @@ one user action through every layer and explain why each layer exists.
 
 ## The thirty-second explanation
 
-Transit Home Finder is a full-stack Next.js application. A React client
+Dallas Transit Nearby is a full-stack Next.js application. A React client
 component lets the user search for an address with Google Places and displays
 results on Google Maps. The browser calls Next.js API routes, which validate the
 request and ask a shared GTFS data layer for nearby stops, stop details, or route
@@ -344,9 +344,9 @@ Be ready to explain these choices:
 
 ### A five-minute walkthrough
 
-1. **Problem:** Apartment listings show location, but not how much useful transit
-   exists nearby.
-2. **User flow:** Search address, choose radius, inspect stops, choose a stop,
+1. **Problem:** People comparing locations in Dallas need a quick way to see
+   which DART stops and published routes are nearby.
+2. **User flow:** Search a Dallas address, choose a radius, inspect stops, choose a stop,
    and visualize published route geometry.
 3. **Frontend:** React manages UI state while Google Maps manages map objects.
 4. **Backend:** Next.js Route Handlers validate requests and expose narrow JSON

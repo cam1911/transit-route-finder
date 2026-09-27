@@ -1,8 +1,8 @@
-# Transit Home Finder
+# Dallas Transit Nearby
 
-Transit Home Finder answers one apartment-hunting question: **how good is public transportation around this address?**
+Dallas Transit Nearby answers a practical local question: **which DART stops and routes are close to this Dallas address?**
 
-Search for a prospective home, inspect nearby DART stops, select a stop, and explore its published routes on an interactive Google Map. The experience is deliberately ordered around **address → nearby transit → stop → route**, rather than generic trip planning.
+Search for a Dallas address, inspect nearby DART stops, select a stop, and explore its published routes on an interactive Google Map. The experience is deliberately ordered around **Dallas address → nearby DART service → stop → route**, rather than generic trip planning.
 
 ## Highlights
 
@@ -18,24 +18,24 @@ Search for a prospective home, inspect nearby DART stops, select a stop, and exp
 
 ## Happy-path walkthrough
 
-### 1. Search for a prospective home
+### 1. Search for a Dallas address
 
-![Transit Home Finder ready for an address search](docs/screenshots/search-desktop.png)
+![Dallas Transit Nearby ready for a Dallas address search](docs/screenshots/dallas-search-desktop.png)
 
 ### 2. Review nearby transit
 
-![Seven nearby DART stops around NorthPark Center](docs/screenshots/nearby-transit-desktop.png)
+![Seven nearby DART stops around NorthPark Center](docs/screenshots/dallas-nearby-transit-desktop.png)
 
 ### 3. Inspect the closest stop
 
-![Selected DART stop and its available service](docs/screenshots/selected-stop-desktop.png)
+![Selected Dallas DART stop and its available service](docs/screenshots/dallas-selected-stop-desktop.png)
 
 ### 4. Explore a published route
 
-![Selected DART route rendered across the map](docs/screenshots/selected-route-desktop.png)
+![Selected Dallas DART route rendered across the map](docs/screenshots/dallas-selected-route-desktop.png)
 
 The walkthrough uses NorthPark Center, a public commercial address in Dallas.
-No home address, saved search, or personal location data is included.
+No residential address, saved search, or personal location data is included.
 
 ## Tech stack
 
