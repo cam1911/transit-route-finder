@@ -476,6 +476,16 @@ export default function TransitExplorer() {
     if (bounds) mapInstance.current.fitBounds(bounds, 72);
   }
 
+  function closeRoute() {
+    // Returning from route focus restores the same destination-to-stop framing
+    // the user saw before opening the route.
+    clearRoute();
+    const bounds = new googleRef.current.maps.LatLngBounds();
+    if (locationRef.current) bounds.extend(locationRef.current.position);
+    if (selectedStop) bounds.extend({ lat: selectedStop.latitude, lng: selectedStop.longitude });
+    if (!bounds.isEmpty()) mapInstance.current.fitBounds(bounds, 150);
+  }
+
   async function selectRoute(route, direction = route.directions?.[0]) {
     // Route + direction + headsign form the UI selection identity. Clicking the
     // same selection again acts as a toggle and clears its overlays.
@@ -538,39 +548,42 @@ export default function TransitExplorer() {
     // Google Maps marker DOM and animations.
     // JSX attributes use `className` because `class` is a JavaScript keyword.
     // Values inside `{}` are JavaScript expressions; quoted values are strings.
-    <main className="relative h-[100dvh] min-h-[620px] w-full overflow-hidden bg-[#dce3e2]">
-      {/* `ref` is special: React assigns MapView's DOM element to mapRef.current. */}
-      <MapView ref={mapRef} />
+    <main className="relative flex h-[100dvh] w-full overflow-hidden bg-[#dce3e2]">
+      {/* On desktop, one fixed-width workspace panel sits beside the map. Mobile
+          keeps the established map-overlay and bottom-sheet interaction. */}
+      <aside className="pointer-events-none absolute inset-0 z-20 md:pointer-events-auto md:relative md:flex md:h-full md:w-[400px] md:shrink-0 md:flex-col md:border-r md:border-gray-200 md:bg-white">
+        <div className={`pointer-events-auto absolute left-3 right-3 top-3 max-h-[calc(100dvh-24px)] overflow-hidden rounded-xl border border-white/70 bg-white/96 shadow-[0_14px_45px_rgba(20,36,34,0.16)] backdrop-blur-xl md:static md:min-h-0 md:w-full md:rounded-none md:border-0 md:bg-white md:shadow-none ${selectedStop ? "max-md:hidden md:shrink-0" : "md:flex md:flex-1 md:flex-col"}`}>
+          {/* Props are the component inputs. Data flows down; event callbacks let
+              the child notify this parent that the user did something. */}
+          <SearchPanel
+            location={location} radius={radius} stopCount={stops.length}
+            compact={Boolean(selectedStop)}
+            onReset={resetSearch} onRadiusChange={changeRadius}
+            query={query} setQuery={setQuery} loading={loading} mapReady={mapReady}
+            onSubmit={searchAddress} suggestions={suggestions} suggestionsOpen={suggestionsOpen}
+            setSuggestionsOpen={setSuggestionsOpen} onChoose={chooseSuggestion}
+          />
 
-      {/* Tailwind is mobile-first. Base classes apply everywhere; `sm:` rules
-          override them at the small-screen breakpoint and above. */}
-      <section className="absolute left-3 right-3 top-3 z-20 sm:left-5 sm:right-auto sm:top-5 sm:w-[390px]">
-        {/* Props are the component inputs. Data flows down; event callbacks let
-            the child notify this parent that the user did something. */}
-        <SearchPanel
-          location={location} radius={radius} stopCount={stops.length}
-          compact={Boolean(selectedStop)}
-          onReset={resetSearch} onRadiusChange={changeRadius}
-          query={query} setQuery={setQuery} loading={loading} mapReady={mapReady}
-          onSubmit={searchAddress} suggestions={suggestions} suggestionsOpen={suggestionsOpen}
-          setSuggestionsOpen={setSuggestionsOpen} onChoose={chooseSuggestion}
-        />
+          {/* The nearby list occupies the panel instead of becoming another card. */}
+          {location && !selectedStop && (
+            <TransitSummary stops={stops} routeCounts={routeCounts} onSelectStop={selectStop} />
+          )}
+        </div>
 
-        {/* `condition && <Component />` is React's common conditional-rendering
-            pattern. The summary only exists in this specific UI state. */}
-        {location && !selectedStop && (
-          <TransitSummary stops={stops} routeCounts={routeCounts} onSelectStop={selectStop} />
+        {/* Deeper workflow states replace the list within the same desktop panel. */}
+        {selectedStop && (
+          <TransitStopPanel
+            selectedStop={selectedStop} stopDetail={stopDetail} stopLoading={stopLoading}
+            activeRoute={activeRoute} activeDirection={activeDirection}
+            onClose={closeStop} onSelectRoute={selectRoute} onBackRoute={closeRoute}
+          />
         )}
-      </section>
+      </aside>
 
-      {/* Selecting a stop mounts the detail panel; closing it unmounts the panel. */}
-      {selectedStop && (
-        <TransitStopPanel
-          selectedStop={selectedStop} stopDetail={stopDetail} stopLoading={stopLoading}
-          activeRoute={activeRoute} activeDirection={activeDirection}
-          onClose={closeStop} onSelectRoute={selectRoute}
-        />
-      )}
+      {/* `ref` is special: React assigns MapView's DOM element to mapRef.current. */}
+      <div className="absolute inset-0 md:relative md:min-w-0 md:flex-1">
+        <MapView ref={mapRef} />
+      </div>
 
       <div className="pointer-events-none absolute bottom-3 left-1/2 z-10 -translate-x-1/2" aria-live="polite">
         {/* A ternary chooses between two values: condition ? success : fallback.

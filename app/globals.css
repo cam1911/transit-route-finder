@@ -20,22 +20,6 @@ button, input { font: inherit; letter-spacing: 0; }
 button { cursor: pointer; }
 #map { width: 100%; height: 100%; }
 
-/* Reusable circular action buttons in the search and stop panels. */
-.icon-button {
-  display: flex;
-  width: 2.25rem;
-  height: 2.25rem;
-  flex: 0 0 auto;
-  align-items: center;
-  justify-content: center;
-  border-radius: 9999px;
-  color: #6b7280;
-  transition: background-color 160ms ease, color 160ms ease, transform 160ms ease;
-}
-.icon-button:hover { background: #f3f4f6; color: #111827; }
-.icon-button:active { transform: scale(0.95); }
-.icon-button:focus-visible { outline: 2px solid var(--teal); outline-offset: 2px; }
-
 /* Google AdvancedMarkerElement renders these custom DOM nodes on the map. */
 .destination-map-marker {
   position: relative;
@@ -142,22 +126,22 @@ button { cursor: pointer; }
 .transit-stop-tooltip span { margin-top: 2px; color: #cbd5e1; font-size: 9px; font-weight: 500; }
 
 /* The vertical line and nodes turn an ordered GTFS stop list into a timeline. */
-.route-timeline { margin: 0; padding: 2px 0 2px 4px; list-style: none; }
+.route-timeline { margin: 0; padding: 2px 0 2px 5px; list-style: none; }
 .route-timeline__stop {
   position: relative;
   display: flex;
-  min-height: 30px;
+  min-height: 34px;
   align-items: flex-start;
-  gap: 10px;
-  padding-bottom: 10px;
+  gap: 11px;
+  padding-bottom: 12px;
 }
 .route-timeline__node {
   position: relative;
   z-index: 2;
-  width: 10px;
-  height: 10px;
+  width: 11px;
+  height: 11px;
   flex: 0 0 auto;
-  margin-top: 2px;
+  margin-top: 4px;
   border: 3px solid;
   border-radius: 50%;
   background: white;
@@ -165,17 +149,16 @@ button { cursor: pointer; }
 .route-timeline__line {
   position: absolute;
   z-index: 1;
-  top: 11px;
+  top: 14px;
   bottom: -1px;
-  left: 4px;
+  left: 4.5px;
   width: 2px;
   background: #d1d5db;
 }
 
 .address-selection { animation: content-arrive 180ms ease-out both; }
-.transit-summary { animation: content-arrive 220ms 50ms ease-out both; }
+.transit-summary { animation: content-arrive 180ms 30ms ease-out both; }
 .stop-panel { animation: sheet-arrive 220ms cubic-bezier(0.22, 0.8, 0.32, 1) both; }
-.route-card__details { animation: route-expand 160ms ease-out both; transform-origin: top; }
 
 /* Small entrance animations make map and panel state changes easier to follow. */
 @keyframes destination-arrive {
@@ -194,11 +177,6 @@ button { cursor: pointer; }
   from { opacity: 0; transform: translateY(18px); }
   to { opacity: 1; transform: translateY(0); }
 }
-@keyframes route-expand {
-  from { opacity: 0; transform: scaleY(0.96) translateY(-3px); }
-  to { opacity: 1; transform: scaleY(1) translateY(0); }
-}
-
 @media (hover: hover) {
   /* Avoid hover-only tooltips on touch devices, where hover can become sticky. */
   .transit-stop-marker:hover .transit-stop-tooltip { display: block; opacity: 1; transform: translateX(-50%) scale(0.78) translateY(-2px); }

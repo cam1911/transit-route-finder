@@ -1,12 +1,20 @@
 import { expect, test } from "@playwright/test";
 
-test("renders the address-search experience", async ({ page }) => {
+test("renders the desktop map workspace and address search", async ({ page }) => {
+  await page.setViewportSize({ width: 1280, height: 720 });
   await page.goto("/");
 
   await expect(page).toHaveTitle(/Transit Home Finder/);
-  await expect(page.getByRole("heading", { name: "Find an apartment or address" })).toBeVisible();
-  await expect(page.getByRole("textbox", { name: "Search an address" })).toBeVisible();
+  await expect(page.getByRole("heading", { name: "Find an address" })).toBeVisible();
+  await expect(page.getByRole("combobox", { name: "Search an address" })).toBeVisible();
   await expect(page.getByRole("button", { name: "Search" })).toBeVisible();
+
+  const sidebarBox = await page.locator("main > aside").boundingBox();
+  const mapBox = await page.getByLabel("Transit map").boundingBox();
+
+  expect(sidebarBox?.width).toBe(400);
+  expect(mapBox?.x).toBe(400);
+  expect(mapBox?.width).toBe(880);
 });
 
 test("rejects invalid nearby-stop coordinates", async ({ request }) => {
