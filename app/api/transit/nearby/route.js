@@ -1,7 +1,11 @@
 import { NextResponse } from "next/server";
 import { getDataSource, nearbyRoutes } from "../../../../lib/gtfs";
 
+// A named HTTP-method export makes this file a Next.js Route Handler.
+// This legacy endpoint returns route lines near a coordinate; the UI now starts
+// with nearby stops instead.
 export async function GET(request) {
+  // URLSearchParams values are strings, so convert and validate at the HTTP edge.
   const { searchParams } = new URL(request.url);
   const latParam = searchParams.get("lat");
   const lngParam = searchParams.get("lng");
@@ -17,11 +21,13 @@ export async function GET(request) {
   }
 
   try {
+    // Business/data-access logic stays in lib/gtfs so this handler only speaks HTTP.
     return NextResponse.json({
       routes: await nearbyRoutes(lat, lng, radiusMiles),
       dataSource: getDataSource(),
     });
   } catch (error) {
+    // Data-layer errors may attach an HTTP status (for example, 503 when no DB exists).
     return NextResponse.json({ error: error.message }, { status: error.status || 500 });
   }
 }

@@ -3,6 +3,8 @@ import { feeds } from "./feeds.mjs";
 import { parseGtfs } from "./parse.mjs";
 import { validateGtfs } from "./validate.mjs";
 
+// Keep INSERT statements under PostgreSQL's parameter limit and avoid one
+// network round trip per GTFS row.
 const INSERT_BATCH_SIZE = 500;
 
 function requireDatabaseUrl() {
@@ -14,6 +16,8 @@ function requireDatabaseUrl() {
 }
 
 async function insertRows(client, table, columns, rows, geographyColumns = []) {
+  // Table/column names come only from constants in this module; row values use
+  // PostgreSQL placeholders so feed content can never become executable SQL.
   for (let offset = 0; offset < rows.length; offset += INSERT_BATCH_SIZE) {
     const chunk = rows.slice(offset, offset + INSERT_BATCH_SIZE);
     const values = [];
@@ -33,6 +37,8 @@ async function insertRows(client, table, columns, rows, geographyColumns = []) {
 }
 
 function normalize(feed, tables) {
+  // Prefix source IDs with the feed/agency identity. GTFS IDs are only guaranteed
+  // unique inside one feed, while this schema can hold multiple agencies.
   const agencies = tables.agency.length
     ? tables.agency.map((row) => ({
       id: row.agency_id ? `${feed.id}:${row.agency_id}` : feed.id,
@@ -113,6 +119,8 @@ function normalize(feed, tables) {
     stop_sequence: Number(row.stop_sequence),
   }));
 
+  // A route may publish several shapes and direction/headsign combinations.
+  // Sets collapse duplicate trips into the route variants needed by the UI.
   const variants = new Map();
   for (const trip of trips) {
     if (!trip.shape_id) continue;
@@ -138,8 +146,11 @@ function normalize(feed, tables) {
 }
 
 async function insertFeed(client, feed, data) {
+  // Replace one feed atomically: readers see either the old complete import or
+  // the new complete import, never a half-populated set of tables.
   await client.query("BEGIN");
   try {
+    // Serialize imports of the same feed without blocking imports for other feeds.
     await client.query("SELECT pg_advisory_xact_lock(hashtext($1))", [`gtfs-import:${feed.id}`]);
     await client.query("DELETE FROM agencies WHERE feed_id = $1", [feed.id]);
     await insertRows(client, "agencies", ["id", "feed_id", "name", "url", "timezone", "lang"],
@@ -151,6 +162,8 @@ async function insertFeed(client, feed, data) {
     await insertRows(client, "trips", ["id", "feed_trip_id", "route_id", "service_id", "shape_id", "direction_id", "headsign"], data.trips);
     await insertRows(client, "stop_times", ["trip_id", "stop_id", "arrival_time", "departure_time", "stop_sequence"], data.stopTimes);
 
+    // Build LineStrings inside PostGIS from ordered point rows. The temporary
+    // table is private to this transaction and disappears automatically.
     await client.query("CREATE TEMP TABLE import_route_shapes (route_id TEXT, shape_id TEXT) ON COMMIT DROP");
     await insertRows(client, "import_route_shapes", ["route_id", "shape_id"], data.routeShapes);
     await client.query(`
@@ -171,6 +184,8 @@ async function insertFeed(client, feed, data) {
 }
 
 export async function importFeed(feed) {
+  // The import pipeline is download -> unzip/parse -> validate -> normalize ->
+  // transactional database load.
   const connectionString = requireDatabaseUrl();
   const feedUrl = process.env.GTFS_FEED_URL || feed.feedUrl;
   if (!feedUrl) throw new Error(`No feedUrl configured for agency ${feed.id}.`);
@@ -180,6 +195,7 @@ export async function importFeed(feed) {
   if (!response.ok) throw new Error(`GTFS download failed: HTTP ${response.status}`);
   const tables = validateGtfs(parseGtfs(Buffer.from(await response.arrayBuffer())));
   const data = normalize(feed, tables);
+  // Scripts are short-lived, so create a dedicated pool and always close it.
   const pool = new Pool({ connectionString, connectionTimeoutMillis: 10000 });
   try {
     const client = await pool.connect();
@@ -195,6 +211,8 @@ export async function importFeed(feed) {
 }
 
 const requestedFeed = process.argv[2];
+// Keeping the CLI entry point in this reusable module allows import-dart.mjs to
+// call importFeed directly without accidentally running this block twice.
 if (requestedFeed === "--help" || requestedFeed === "-h") {
   console.log("Usage: npm run import:gtfs -- <feed-id> (configured feeds: dart; GTFS_FEED_URL may override the feed URL)");
 } else if (requestedFeed !== undefined || process.argv[1]?.endsWith("/import.mjs")) {

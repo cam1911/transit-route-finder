@@ -1,5 +1,7 @@
 "use client";
 
+// These components are intentionally presentational: data and callbacks enter
+// through props, while TransitExplorer owns effects, API calls, and map objects.
 import { forwardRef } from "react";
 import {
   ArrowRight, BusFront, ChevronDown, ChevronUp, CircleDot, Home,
@@ -9,11 +11,13 @@ import {
 
 export const RADIUS_OPTIONS = [0.5, 1, 2];
 
+// GTFS allows either a short public label or a longer descriptive route name.
 export function routeName(route) {
   return route.shortName || route.longName || route.id;
 }
 
 export function ModeIcon({ type, className = "h-4 w-4" }) {
+  // Centralizing this mapping keeps every card/summary visually consistent.
   if (type === "RAIL") return <TrainFront className={className} aria-hidden="true" />;
   if (type === "STREETCAR") return <TramFront className={className} aria-hidden="true" />;
   return <BusFront className={className} aria-hidden="true" />;
@@ -27,9 +31,12 @@ export function modeLabel(type) {
 }
 
 export const MapView = forwardRef(function MapView(_props, ref) {
+  // forwardRef lets the parent hand this real DOM node to the imperative Maps API.
   return <div ref={ref} id="map" className="absolute inset-0" aria-label="Transit map" />;
 });
 
+// Controlled inputs receive their value and setter from a parent, making the
+// parent the single source of truth for the current search.
 export function AddressAutocomplete({
   query, setQuery, loading, mapReady, onSubmit, suggestions, suggestionsOpen,
   setSuggestionsOpen, onChoose,
@@ -54,6 +61,7 @@ export function AddressAutocomplete({
           {loading ? <LoaderCircle className="h-4 w-4 animate-spin" /> : <ArrowRight className="h-4 w-4" />}
         </button>
       </form>
+      {/* Render suggestions only when there is useful content, not an empty shell. */}
       {suggestionsOpen && suggestions.length > 0 && (
         <div className="-mx-5 mt-4 border-t border-gray-100 bg-white px-2 pb-2 pt-2">
           {suggestions.map((suggestion) => {
@@ -79,6 +87,7 @@ export function MapControls({ radius, onRadiusChange }) {
     <div className="flex items-center justify-between gap-3 border-t border-gray-100 px-4 py-3 sm:px-5">
       <span className="text-xs font-medium text-gray-500">Search radius</span>
       <div className="flex rounded-lg bg-gray-100 p-0.5" aria-label="Search radius">
+        {/* Mapping data to buttons makes adding another supported radius trivial. */}
         {RADIUS_OPTIONS.map((option) => (
           <button key={option} type="button" onClick={() => onRadiusChange(option)} className={`min-w-12 rounded-md px-2.5 py-1.5 text-xs font-semibold transition ${radius === option ? "bg-white text-gray-950 shadow-sm" : "text-gray-500 hover:text-gray-900"}`}>
             {option} mi
@@ -101,6 +110,7 @@ export function SearchPanel({
           <span className="flex h-7 w-7 items-center justify-center rounded-lg bg-teal-800 text-white"><Home className="h-3.5 w-3.5" aria-hidden="true" /></span>
           Transit Home Finder
         </div>
+        {/* The panel changes from search mode to selected-address mode. */}
         {location ? (
           <div className="address-selection flex items-start justify-between gap-3">
             <div className="min-w-0">
@@ -131,6 +141,7 @@ export function SearchPanel({
 }
 
 export function TransitSummary({ stops, routeCounts, onSelectStop }) {
+  // routeCounts is grouped by transport mode; reduce produces one headline total.
   const allRouteCount = Object.values(routeCounts).reduce((total, count) => total + count, 0);
   return (
     <div className="transit-summary mt-3 rounded-2xl border border-white/70 bg-white/92 p-4 shadow-[0_12px_40px_rgba(25,42,40,0.12)] backdrop-blur-xl sm:p-5">
@@ -164,6 +175,7 @@ export function TransitSummary({ stops, routeCounts, onSelectStop }) {
 }
 
 export function RouteTimeline({ stops, routeColor, selectedStopId }) {
+  // Semantic <ol>/<li> markup reflects that GTFS stop_sequence is ordered.
   return (
     <ol className="route-timeline max-h-60 overflow-y-auto pr-1">
       {stops.map((stop, index) => (
@@ -188,6 +200,7 @@ export function TransitRouteCard({ route, expanded, activeRoute, activeDirection
         </span>
         {expanded ? <ChevronUp className="h-4 w-4 text-gray-400" /> : <ChevronDown className="h-4 w-4 text-gray-400" />}
       </button>
+      {/* Only the active route mounts its direction controls and stop timeline. */}
       {expanded && (
         <div className="route-card__details border-t border-gray-200 px-3.5 pb-4 pt-3">
           {route.directions?.length > 0 && (
@@ -211,6 +224,8 @@ export function TransitRouteCard({ route, expanded, activeRoute, activeDirection
 }
 
 export function TransitStopPanel({ selectedStop, stopDetail, stopLoading, activeRoute, activeDirection, onClose, onSelectRoute }) {
+  // On small screens this is a bottom sheet; responsive Tailwind classes move it
+  // to a right-side panel at the `sm` breakpoint.
   return (
     <aside className="stop-panel absolute bottom-3 left-3 right-3 z-30 max-h-[56dvh] overflow-y-auto rounded-2xl border border-white/70 bg-white/96 shadow-[0_22px_70px_rgba(20,36,34,0.22)] backdrop-blur-xl sm:bottom-5 sm:left-auto sm:right-5 sm:max-h-[calc(100dvh-40px)] sm:w-[400px]">
       <div className="sticky top-0 z-10 flex items-start justify-between gap-4 border-b border-gray-100 bg-white/95 p-4 backdrop-blur-xl sm:p-5">

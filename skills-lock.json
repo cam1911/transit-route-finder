@@ -1,0 +1,23 @@
+{
+  "version": 1,
+  "skills": {
+    "next-dev-loop": {
+      "source": "vercel/next.js",
+      "sourceType": "github",
+      "skillPath": "skills/next-dev-loop/SKILL.md",
+      "computedHash": "c79ce9844e5e78086c64d820c5b34496ca411c097db68d0a264caf84abcc2c1c"
+    },
+    "supabase": {
+      "source": "supabase/agent-skills",
+      "sourceType": "github",
+      "skillPath": "skills/supabase/SKILL.md",
+      "computedHash": "bcbf1c542906f109e9dc3457c389a9cc85854eb90fa6b5cba2e5c131140305e1"
+    },
+    "supabase-postgres-best-practices": {
+      "source": "supabase/agent-skills",
+      "sourceType": "github",
+      "skillPath": "skills/supabase-postgres-best-practices/SKILL.md",
+      "computedHash": "e14e276241805c97dbcfe40dcbea1a3035269cc7293cac4b1832dda41a835e60"
+    }
+  }
+}

@@ -2,10 +2,18 @@
   "name": "transit-home-finder",
   "version": "0.1.0",
   "private": true,
+  "engines": {
+    "node": ">=24.0.0"
+  },
   "scripts": {
     "dev": "next dev",
     "build": "next build",
     "start": "next start",
+    "test:e2e": "playwright test",
+    "test:e2e:headed": "playwright test --headed",
+    "test:db": "supabase test db --local",
+    "db:start": "supabase db start",
+    "browser:install": "playwright install chromium && agent-browser install",
     "import:dart": "node scripts/import-dart.mjs",
     "import:gtfs": "node scripts/gtfs/import.mjs",
     "import:local": "node scripts/gtfs/import-local.mjs"
@@ -17,13 +25,16 @@
     "adm-zip": "^0.6.1",
     "csv-parse": "^7.0.3",
     "lucide-react": "^1.48.0",
-    "next": "^15.5.4",
+    "next": "16.3.6",
     "pg": "^8.23.0",
-    "react": "^19.1.1",
-    "react-dom": "^19.1.1"
+    "react": "19.3.0",
+    "react-dom": "19.3.0"
   },
   "devDependencies": {
+    "@playwright/test": "1.63.0",
     "@tailwindcss/postcss": "^4.3.3",
+    "agent-browser": "0.38.1",
+    "supabase": "2.118.0",
     "tailwindcss": "^4.1.13"
   }
 }

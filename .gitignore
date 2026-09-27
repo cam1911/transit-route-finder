@@ -1,12 +1,16 @@
+# Secrets: ignore every environment file, then explicitly keep the safe template.
 .env*
 !.env.example
-.agents/
-skills-lock.json
+# Framework build output and installed third-party packages.
 .next/
 .next-dev/
 node_modules/
+# Downloaded feeds, test output, OS metadata, and logs.
 .dart-gtfs.zip
 coverage/
+playwright-report/
+test-results/
+.agent-browser/
 .DS_Store
 *.log
 npm-debug.log*

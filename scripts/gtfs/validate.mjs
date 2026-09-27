@@ -1,3 +1,4 @@
+// Define the subset of the GTFS schema that downstream normalization depends on.
 const REQUIRED_COLUMNS = {
   routes: ["route_id", "route_type"],
   stops: ["stop_id", "stop_name", "stop_lat", "stop_lon"],
@@ -12,6 +13,8 @@ function numberInRange(value, min, max) {
 }
 
 export function validateGtfs(tables) {
+  // Collect related errors before throwing so a feed maintainer can fix several
+  // problems in one pass instead of rerunning once per missing field.
   const errors = [];
   for (const [name, columns] of Object.entries(REQUIRED_COLUMNS)) {
     const rows = tables[name];
@@ -25,6 +28,7 @@ export function validateGtfs(tables) {
   }
   if (errors.length) throw new Error(`Invalid GTFS feed:\n- ${errors.join("\n- ")}`);
 
+  // Sets make uniqueness and foreign-key-style membership checks inexpensive.
   const routeIds = new Set(tables.routes.map((row) => row.route_id));
   const stopIds = new Set(tables.stops.map((row) => row.stop_id));
   const tripIds = new Set(tables.trips.map((row) => row.trip_id));
@@ -60,6 +64,7 @@ export function validateGtfs(tables) {
     if (!Number.isInteger(Number(row.shape_pt_sequence))) errors.push(`Invalid shape sequence for ${row.shape_id}`);
   }
 
+  // Some bad references can repeat thousands of times; de-duplicate the report.
   if (errors.length) throw new Error(`Invalid GTFS feed:\n- ${[...new Set(errors)].join("\n- ")}`);
   return tables;
 }

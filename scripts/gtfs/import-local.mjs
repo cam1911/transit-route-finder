@@ -4,6 +4,8 @@ import { feeds } from "./feeds.mjs";
 import { parseGtfs } from "./parse.mjs";
 import { validateGtfs } from "./validate.mjs";
 
+// This lightweight ETL path creates the committed JSON fallback. It is useful for
+// local development because it requires neither Supabase nor PostGIS.
 const feed = feeds[process.argv[2] || "dart"];
 if (!feed) throw new Error(`Unknown GTFS feed: ${process.argv[2]}`);
 
@@ -11,6 +13,7 @@ const response = await fetch(process.env.GTFS_FEED_URL || feed.feedUrl);
 if (!response.ok) throw new Error(`GTFS download failed: HTTP ${response.status}`);
 const tables = validateGtfs(parseGtfs(Buffer.from(await response.arrayBuffer())));
 
+// Index related tables by ID before joining them in JavaScript.
 const routeById = new Map(tables.routes.map((route) => [route.route_id, {
   id: route.route_id,
   shortName: route.route_short_name || route.route_id,
@@ -22,6 +25,8 @@ const tripById = new Map(tables.trips.map((trip) => [trip.trip_id, trip]));
 const servicesByStop = new Map();
 
 for (const stopTime of tables.stop_times) {
+  // Walk the GTFS relationships stop_time -> trip -> route and group the service
+  // variants available at each stop.
   const trip = tripById.get(stopTime.trip_id);
   if (!trip) continue;
   const route = routeById.get(trip.route_id);
@@ -38,6 +43,7 @@ for (const stopTime of tables.stop_times) {
   }
 }
 
+// Emit only the fields the runtime JSON data source needs.
 const stops = tables.stops.map((stop) => ({
   id: stop.stop_id,
   name: stop.stop_name,

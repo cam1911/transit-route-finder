@@ -1,7 +1,10 @@
 import { NextResponse } from "next/server";
 import { getDataSource, nearbyStops } from "../../../../../lib/gtfs";
 
+// GET /api/transit/stops/nearby is the first application API called after a
+// user chooses an address.
 export async function GET(request) {
+  // Validate untrusted query-string input before it reaches filesystem or SQL code.
   const { searchParams } = new URL(request.url);
   const latParam = searchParams.get("lat");
   const lngParam = searchParams.get("lng");
@@ -18,6 +21,7 @@ export async function GET(request) {
   }
 
   try {
+    // The response shape is identical whether lib/gtfs uses JSON or PostGIS.
     return NextResponse.json({
       stops: await nearbyStops(lat, lng, radiusMiles),
       dataSource: getDataSource(),
