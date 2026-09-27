@@ -4,8 +4,6 @@ Transit Home Finder answers one apartment-hunting question: **how good is public
 
 Search for a prospective home, inspect nearby DART stops, select a stop, and explore its published routes on an interactive Google Map. The experience is deliberately ordered around **address → nearby transit → stop → route**, rather than generic trip planning.
 
-![Transit Home Finder address search](docs/screenshots/search-desktop.png)
-
 ## Highlights
 
 - Google Places address search and autocomplete
@@ -18,15 +16,26 @@ Search for a prospective home, inspect nearby DART stops, select a stop, and exp
 - Bundled real DART GTFS snapshot for local development
 - Optional PostgreSQL/PostGIS data source for production-scale spatial queries
 
-## Demo
+## Happy-path walkthrough
 
-![Nearby transit around NorthPark Center](docs/screenshots/nearby-transit-desktop.png)
+### 1. Search for a prospective home
 
-| Selected stop | Selected route |
-| --- | --- |
-| ![Selected DART stop](docs/screenshots/selected-stop-desktop.png) | ![Selected DART route](docs/screenshots/selected-route-desktop.png) |
+![Transit Home Finder ready for an address search](docs/screenshots/search-desktop.png)
 
-The screenshots use a public commercial address in Dallas. No home address or personal location data is included in this repository.
+### 2. Review nearby transit
+
+![Seven nearby DART stops around NorthPark Center](docs/screenshots/nearby-transit-desktop.png)
+
+### 3. Inspect the closest stop
+
+![Selected DART stop and its available service](docs/screenshots/selected-stop-desktop.png)
+
+### 4. Explore a published route
+
+![Selected DART route rendered across the map](docs/screenshots/selected-route-desktop.png)
+
+The walkthrough uses NorthPark Center, a public commercial address in Dallas.
+No home address, saved search, or personal location data is included.
 
 ## Tech stack
 
