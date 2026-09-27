@@ -368,9 +368,9 @@ Be ready to explain these choices:
 ### Questions you should be ready for
 
 **Why Next.js instead of plain React?**
-It provides routing, server code, request proxying, deployment conventions, and React
-rendering in one framework. This app needs both browser interaction and a secure
-database boundary.
+It provides routing, server code, deployment conventions, and React rendering in
+one framework. This app needs both browser interaction and a secure database
+boundary.
 
 **Why not call Supabase directly from the browser?**
 The current transit data is queried with server-side SQL and includes spatial
