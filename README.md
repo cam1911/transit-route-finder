@@ -100,7 +100,7 @@ For PostGIS-backed queries:
 
 1. Apply `supabase/migrations/0001_gtfs.sql`.
 2. Set `SUPABASE_DB_URL` in `.env.local`.
-3. Import the feed with `npm run import:dart`.
+3. Import the feed into the database with `npm run import:dart`.
 4. Set `GTFS_DATA_SOURCE=postgres` to require the database source.
 
 Imports run in a transaction and preserve GTFS extended-hour times such as `25:10:00`.
@@ -151,6 +151,7 @@ npm run format               # Format authored source files
 npm run format:check         # Check formatting only
 npm run fallow               # Print the complete Fallow analysis
 npm run fallow:health        # Print the current health score
+npm run fallow:health:gate   # Run the baseline-aware health gate used by quality
 npm run fallow:audit -- --base HEAD
 ```
 
@@ -225,11 +226,13 @@ Google Places ──> TransitExplorer (browser state + map)
    `app/page.js` renders the main feature at `/`.
 2. **Client/controller layer:** `components/TransitExplorer.js` initializes
    Google Maps, owns interaction state, requests transit data, and manages map
-   overlays. `components/transit/TransitUI.js` contains reusable presentational
+   overlays. `components/transit/TransitWorkspace.js` composes the page layout,
+   while `components/transit/TransitUI.js` contains reusable presentational
    React components.
 3. **HTTP layer:** files under `app/api/transit/` validate URL input, call the
    data layer, translate missing records and failures into HTTP status codes,
-   and return JSON.
+   and return JSON. Shared nearby-search parsing lives in
+   `lib/api/nearby-request.js`.
 4. **Data-access layer:** `lib/gtfs.js` exposes one interface over two backends.
    Local development can read committed JSON; production can use indexed
    PostGIS queries through the shared pool in `lib/db.js`.
@@ -260,7 +263,9 @@ logic. Use this order to study the project:
 | `app/page.js` | The `/` route and top-level feature composition. |
 | `app/globals.css` | Global design tokens, custom map marker styles, animation, responsive rules, and reduced-motion accessibility. |
 | `components/TransitExplorer.js` | Client state, effects, refs, Google Maps integration, API calls, and feature orchestration. |
+| `components/transit/TransitWorkspace.js` | Responsive page composition that connects the controller's state bundles to the map and panels. |
 | `components/transit/TransitUI.js` | Prop-driven presentational components, conditional rendering, list rendering, responsive Tailwind styling, and accessibility attributes. |
+| `lib/api/nearby-request.js` | Shared query-string parsing and latitude/longitude/radius validation for nearby transit endpoints. |
 | `app/api/transit/stops/nearby/route.js` | Query-string parsing, validation, async data access, and JSON responses. |
 | `app/api/transit/stops/[stopId]/route.js` | Dynamic route parameters and 404 handling. |
 | `app/api/transit/routes/[routeId]/route.js` | On-demand route details and explicit API response shaping. |
@@ -291,8 +296,9 @@ four-week study plan, see [`docs/LEARNING_ROADMAP.md`](docs/LEARNING_ROADMAP.md)
 4. Compare the JSON and PostGIS branches of the same data-access function.
 5. Read the migration from parent tables to child tables, then follow the
    importer in the opposite direction from raw feed to those tables.
-6. Finish with the request proxy and Supabase clients to understand browser/server
-   boundaries and cookie-based sessions.
+6. Finish with `TransitWorkspace.js` and `lib/api/nearby-request.js` to see how
+   layout composition and shared HTTP validation stay separate from the map
+   controller and data-access layer.
 
 ## Security and privacy
 
