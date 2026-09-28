@@ -30,7 +30,8 @@
     "import:local": "node scripts/gtfs/import-local.mjs"
   },
   "dependencies": {
-    "@googlemaps/js-api-loader": "^1.16.8",
+    "@googlemaps/markerclusterer": "^2.6.2",
+    "@vis.gl/react-google-maps": "^1.10.1",
     "adm-zip": "^0.6.1",
     "csv-parse": "^7.0.3",
     "lucide-react": "^1.48.0",

@@ -14,9 +14,9 @@ import {
   TramFront,
   X,
 } from "lucide-react";
+
 // These components are intentionally presentational: data and callbacks enter
-// through props, while TransitExplorer owns effects, API calls, and map objects.
-import { forwardRef } from "react";
+// through props, while TransitExplorer owns effects and API calls.
 
 const RADIUS_OPTIONS = [0.5, 1, 2];
 
@@ -48,11 +48,6 @@ function routeTextColor(backgroundColor) {
   const [red, green, blue] = [0, 2, 4].map((offset) => Number.parseInt(hex.slice(offset, offset + 2), 16));
   return (red * 299 + green * 587 + blue * 114) / 1000 > 155 ? "#111827" : "#ffffff";
 }
-
-export const MapView = forwardRef(function MapView(_props, ref) {
-  // forwardRef lets the parent hand this real DOM node to the imperative Maps API.
-  return <section ref={ref} id="map" className="absolute inset-0" aria-label="Transit map" />;
-});
 
 // Controlled inputs receive their value and setter from a parent, making the
 // parent the single source of truth for the current search.
@@ -346,7 +341,7 @@ function TransitRouteRow({ route, onSelect }) {
   );
 }
 
-function RouteDetail({ activeRoute, activeDirection, selectedStopId, onBack, onSelectRoute }) {
+function RouteDetail({ activeRoute, activeDirection, selectedStopId, routeLoading, onBack, onSelectRoute }) {
   const route = activeRoute.route;
   return (
     <>
@@ -399,7 +394,11 @@ function RouteDetail({ activeRoute, activeDirection, selectedStopId, onBack, onS
             <span className="text-xs text-gray-500">{activeDirection.stops.length} stops</span>
           )}
         </div>
-        {activeDirection?.stops?.length ? (
+        {routeLoading ? (
+          <div className="flex items-center justify-center gap-2 py-10 text-sm text-gray-500" role="status">
+            <LoaderCircle className="h-4 w-4 animate-spin" /> Loading route geometry
+          </div>
+        ) : activeDirection?.stops?.length ? (
           <RouteTimeline stops={activeDirection.stops} routeColor={route.color} selectedStopId={selectedStopId} />
         ) : (
           <div className="flex items-center gap-2 py-6 text-sm text-gray-500">
@@ -415,6 +414,7 @@ export function TransitStopPanel({
   selectedStop,
   stopDetail,
   stopLoading,
+  routeLoading,
   activeRoute,
   activeDirection,
   onClose,
@@ -432,6 +432,7 @@ export function TransitStopPanel({
           activeRoute={activeRoute}
           activeDirection={activeDirection}
           selectedStopId={selectedStop.id}
+          routeLoading={routeLoading}
           onBack={onBackRoute}
           onSelectRoute={onSelectRoute}
         />

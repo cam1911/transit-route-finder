@@ -12,6 +12,8 @@ This block is written and re-added by `next dev` — verify at `node_modules/nex
 
 ## Required skills
 
+- Load `.agents/skills/google-maps-platform/SKILL.md` before reviewing or
+  changing Google Maps Platform code.
 - Load `.agents/skills/next-dev-loop/SKILL.md` before validating changes to
   Next.js runtime behavior.
 - Load `.agents/skills/supabase/SKILL.md` for every Supabase task.

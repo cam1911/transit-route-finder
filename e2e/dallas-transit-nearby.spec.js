@@ -68,3 +68,23 @@ test("serves normalized route directions for a nearby stop", async ({ request })
   expect(body.routes.length).toBeGreaterThan(0);
   expect(body.routes.every((route) => Array.isArray(route.directions))).toBe(true);
 });
+
+test("accepts a selected direction when loading route geometry", async ({ request }) => {
+  const nearbyResponse = await request.get("/api/transit/stops/nearby?lat=32.7767&lng=-96.7970&radiusMiles=1");
+  const nearbyBody = await nearbyResponse.json();
+  const stopResponse = await request.get(`/api/transit/stops/${encodeURIComponent(nearbyBody.stops[0].id)}`);
+  const stop = await stopResponse.json();
+  const route = stop.routes[0];
+  const direction = route.directions[0];
+  const params = new URLSearchParams({
+    directionId: direction.id,
+    headsign: direction.headsign,
+  });
+  const response = await request.get(`/api/transit/routes/${encodeURIComponent(route.id)}?${params}`);
+  const body = await response.json();
+
+  expect(response.ok()).toBe(true);
+  expect(body.id).toBe(route.id);
+  expect(Array.isArray(body.shapes)).toBe(true);
+  expect(Array.isArray(body.directions)).toBe(true);
+});

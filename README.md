@@ -41,7 +41,7 @@ No residential address, saved search, or personal location data is included.
 
 - Next.js 16 and React 19
 - Tailwind CSS 4
-- Google Maps JavaScript API and Places API
+- Google Maps JavaScript API, Places API (New), and `@vis.gl/react-google-maps`
 - DART static GTFS data
 - Supabase-hosted PostgreSQL, PostGIS, and `pg` for the optional database-backed data source
 
@@ -84,7 +84,58 @@ checkout.
 | `GTFS_DATA_SOURCE` | No | Server | `json` or `postgres`; automatically uses JSON when no database URL exists |
 | `GTFS_FEED_URL` | No | Server | Optional GTFS feed override |
 
-`NEXT_PUBLIC_` values are intentionally included in the browser bundle. Restrict the Google key by HTTP referrer and allow only the required Google APIs. Never expose a Supabase secret/service-role key or database connection string.
+`NEXT_PUBLIC_` values are intentionally included in the browser bundle. For
+production, restrict the Google browser key to the application's exact HTTPS
+referrers and the **Maps JavaScript API** plus **Places API (New)**. Add only
+the local origins needed for development, such as
+`http://localhost:3000/*`. Do not enable Routes, Geocoding, or other Google APIs
+for this key because the application does not call them. Never expose a
+Supabase secret/service-role key or database connection string.
+
+Google Maps Platform usage can incur charges against the associated Google
+Cloud billing account. Configure quota limits and budget alerts before a public
+launch.
+
+## Google Maps architecture
+
+| Product | Purpose | Runs in | Request trigger | Browser-key restriction |
+| --- | --- | --- | --- | --- |
+| Maps JavaScript API | Interactive basemap, camera, circle, route polylines, Advanced Markers, and marker clusters | Browser | Once when the application loads | Maps JavaScript API |
+| Places API (New) autocomplete | Up to five Dallas-biased address/place predictions | Browser SDK | After at least three characters and 300 ms without typing | Places API (New) |
+| Places API (New) Place Details | Display name, formatted address, and coordinates for a selected prediction | Browser SDK | Explicit suggestion selection | Places API (New) |
+| Places API (New) Text Search | Resolve manually submitted text when no suggestion is selected | Browser SDK | Explicit Search submission | Places API (New) |
+
+Autocomplete requests use one session token from the start of typing through
+the selected Place Details request. A fresh token is created for the next
+search. Place fields are limited to the three values the application displays
+or needs for its DART lookup. Google place results are not persisted or used to
+populate transit data.
+
+Google Maps Platform owns the basemap and address search. DART's GTFS feed owns
+stops, routes, stop-to-route relationships, and published route geometry.
+Nearby-stop and route requests call this application's Next.js endpoints, never
+Google nearby-search or routing products.
+
+### Performance and cost strategy
+
+- Maps and Places libraries load once through `APIProvider`; map instances may
+  be reused by the React integration.
+- Autocomplete is Dallas-biased, requires three characters, and is debounced.
+  Map movement does not trigger Places or transit requests.
+- Nearby DART data is fetched only after address selection or an explicit
+  radius change. Results are capped at 250 nearest stops.
+- Up to 74 nearby stops use individual mode-specific markers. At 75 or more,
+  the official marker clusterer reduces simultaneous marker rendering.
+- Stop details and route geometry load only after explicit selection. Route
+  focus renders the selected stop and selected direction's published shapes
+  when direction-to-shape data is available.
+- Successful DART API responses are cached in memory by the current page using
+  `lat:lng:radius`, stop ID, or route-and-direction URL. The cache has no
+  cross-session TTL and is invalidated by a page reload.
+- Bundled GTFS JSON is parsed once per server process and invalidated by a
+  server restart after feed import. PostGIS data is not application-cached.
+- Transient Google network/5xx-style failures receive one bounded retry after
+  400 ms. Authorization, invalid-request, and quota failures are not retried.
 
 ## Transit data
 
@@ -109,7 +160,7 @@ privileges from Supabase's `anon` and `authenticated` roles.
 
 ## Agent and browser tooling
 
-The repository tracks first-party Next.js and Supabase skills under
+The repository tracks Google Maps Platform, Next.js, and Supabase skills under
 `.agents/skills/`, with exact sources recorded in `skills-lock.json`.
 
 - Next.js 16 supplies version-matched documentation in
@@ -224,11 +275,13 @@ Google Places ──> TransitExplorer (browser state + map)
 
 1. **Rendering layer:** `app/layout.js` establishes the HTML shell and
    `app/page.js` renders the main feature at `/`.
-2. **Client/controller layer:** `components/TransitExplorer.js` initializes
-   Google Maps, owns interaction state, requests transit data, and manages map
-   overlays. `components/transit/TransitWorkspace.js` composes the page layout,
+2. **Client/controller layer:** `components/TransitExplorer.js` owns interaction
+   state, Places requests, request cancellation, and page-lifetime DART caches.
+   `components/transit/TransitMap.js` declaratively owns the map, camera,
+   Advanced Markers, clustering, circle, and selected-route polylines.
+   `components/transit/TransitWorkspace.js` composes the responsive page layout,
    while `components/transit/TransitUI.js` contains reusable presentational
-   React components.
+   controls.
 3. **HTTP layer:** files under `app/api/transit/` validate URL input, call the
    data layer, translate missing records and failures into HTTP status codes,
    and return JSON. Shared nearby-search parsing lives in
@@ -263,6 +316,7 @@ logic. Use this order to study the project:
 | `app/page.js` | The `/` route and top-level feature composition. |
 | `app/globals.css` | Global design tokens, custom map marker styles, animation, responsive rules, and reduced-motion accessibility. |
 | `components/TransitExplorer.js` | Client state, effects, refs, Google Maps integration, API calls, and feature orchestration. |
+| `components/transit/TransitMap.js` | Declarative React map rendering, camera framing, Advanced Markers, threshold-based clustering, radius circle, and selected-route polylines. |
 | `components/transit/TransitWorkspace.js` | Responsive page composition that connects the controller's state bundles to the map and panels. |
 | `components/transit/TransitUI.js` | Prop-driven presentational components, conditional rendering, list rendering, responsive Tailwind styling, and accessibility attributes. |
 | `lib/api/nearby-request.js` | Shared query-string parsing and latitude/longitude/radius validation for nearby transit endpoints. |

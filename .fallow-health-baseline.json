@@ -19,10 +19,18 @@
         "count": 1
       },
       "crap_high": {
-        "count": 3
+        "count": 1
       },
       "crap_moderate": {
-        "count": 6
+        "count": 2
+      }
+    },
+    "components/transit/TransitMap.js": {
+      "crap_high": {
+        "count": 1
+      },
+      "crap_moderate": {
+        "count": 4
       }
     },
     "components/transit/TransitUI.js": {
@@ -41,14 +49,30 @@
         "count": 1
       }
     },
+    "components/transit/useAddressSearch.js": {
+      "crap_high": {
+        "count": 1
+      },
+      "crap_moderate": {
+        "count": 2
+      }
+    },
     "lib/api/nearby-request.js": {
       "crap_high": {
         "count": 1
       }
     },
-    "lib/gtfs.js": {
-      "crap_high": {
+    "lib/client/transit-api.js": {
+      "crap_moderate": {
         "count": 2
+      }
+    },
+    "lib/gtfs.js": {
+      "crap_critical": {
+        "count": 1
+      },
+      "crap_high": {
+        "count": 1
       }
     },
     "scripts/gtfs/import-local.mjs": {
@@ -81,38 +105,16 @@
         "count": 1
       }
     },
-    "components/TransitExplorer.js\u0000<arrow>": {
-      "crap_moderate": {
-        "count": 1
-      }
-    },
-    "components/TransitExplorer.js\u0000TransitExplorer": {
+    "components/TransitExplorer.js\u0000TransitController": {
       "complexity_high": {
         "count": 1
-      }
-    },
-    "components/TransitExplorer.js\u0000commitPlace": {
-      "crap_moderate": {
-        "count": 1
-      }
-    },
-    "components/TransitExplorer.js\u0000drawRouteShapes": {
-      "crap_high": {
-        "count": 1
-      }
-    },
-    "components/TransitExplorer.js\u0000initializeMap": {
-      "crap_moderate": {
-        "count": 1
-      }
-    },
-    "components/TransitExplorer.js\u0000loadStops": {
+      },
       "crap_high": {
         "count": 1
       }
     },
     "components/TransitExplorer.js\u0000searchAddress": {
-      "crap_high": {
+      "crap_moderate": {
         "count": 1
       }
     },
@@ -121,17 +123,30 @@
         "count": 1
       }
     },
-    "components/TransitExplorer.js\u0000selectStop": {
-      "crap_moderate": {
-        "count": 1
-      }
-    },
     "components/TransitExplorer.js\u0000splitAddress": {
       "crap_moderate": {
         "count": 1
       }
     },
-    "components/TransitExplorer.js\u0000timer": {
+    "components/transit/TransitMap.js\u0000<arrow>": {
+      "crap_high": {
+        "count": 1
+      },
+      "crap_moderate": {
+        "count": 1
+      }
+    },
+    "components/transit/TransitMap.js\u0000StopMarker": {
+      "crap_moderate": {
+        "count": 1
+      }
+    },
+    "components/transit/TransitMap.js\u0000TransitMap": {
+      "crap_moderate": {
+        "count": 1
+      }
+    },
+    "components/transit/TransitMap.js\u0000routeShapes": {
       "crap_moderate": {
         "count": 1
       }
@@ -166,13 +181,38 @@
         "count": 1
       }
     },
+    "components/transit/useAddressSearch.js\u0000<arrow>": {
+      "crap_moderate": {
+        "count": 1
+      }
+    },
+    "components/transit/useAddressSearch.js\u0000googleErrorMessage": {
+      "crap_moderate": {
+        "count": 1
+      }
+    },
+    "components/transit/useAddressSearch.js\u0000timer": {
+      "crap_high": {
+        "count": 1
+      }
+    },
     "lib/api/nearby-request.js\u0000parseNearbySearchParams": {
       "crap_high": {
         "count": 1
       }
     },
+    "lib/client/transit-api.js\u0000request": {
+      "crap_moderate": {
+        "count": 1
+      }
+    },
+    "lib/client/transit-api.js\u0000route": {
+      "crap_moderate": {
+        "count": 1
+      }
+    },
     "lib/gtfs.js\u0000getRoute": {
-      "crap_high": {
+      "crap_critical": {
         "count": 1
       }
     },
@@ -223,5 +263,7 @@
     }
   },
   "runtime_coverage_findings": [],
-  "target_keys": []
+  "target_keys": [
+    "scripts/gtfs/validate.mjs:untested risk"
+  ]
 }
